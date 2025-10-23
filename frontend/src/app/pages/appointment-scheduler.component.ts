@@ -92,7 +92,7 @@ interface TimeSlotUI {
                 </button>
                 <div class="text-center flex-1">
                   <p class="text-white font-bold text-lg">
-                    {{ currentMonth | date:'MMMM' : 'es' | uppercase }} {{ currentMonth | date:'yyyy' }}
+                    {{ getMonthName(currentMonth) | uppercase }} {{ currentMonth?.getFullYear() }}
                   </p>
                 </div>
                 <button type="button"
@@ -245,7 +245,7 @@ export class AppointmentSchedulerComponent implements OnInit, OnChanges {
   @Output() submit = new EventEmitter<any>();
 
   appointmentForm: FormGroup;
-  currentMonth: Date = new Date();
+  currentMonth: Date;
   calendarDays: CalendarDay[] = [];
   selectedDateString: string | null = null;
   timeSlots: TimeSlotUI[] = [];
@@ -256,6 +256,7 @@ export class AppointmentSchedulerComponent implements OnInit, OnChanges {
     private dataService: DataService,
     private fb: FormBuilder
   ) {
+    this.currentMonth = new Date();
     this.appointmentForm = this.fb.group({
       serviceId: ['', Validators.required],
       barberId: ['', Validators.required],
@@ -266,6 +267,9 @@ export class AppointmentSchedulerComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
+    if (!this.currentMonth || !(this.currentMonth instanceof Date)) {
+      this.currentMonth = new Date();
+    }
     this.generateCalendarDays();
   }
 
@@ -457,6 +461,14 @@ export class AppointmentSchedulerComponent implements OnInit, OnChanges {
     const month = months[date.getMonth()];
     const year = date.getFullYear();
     return `${day} de ${month} de ${year}`;
+  }
+
+  getMonthName(date: Date | null | undefined): string {
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+      return '';
+    }
+    const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    return months[date.getMonth()] || '';
   }
 
   onSubmit(): void {

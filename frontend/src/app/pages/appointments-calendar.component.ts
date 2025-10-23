@@ -37,9 +37,9 @@ interface CalendarDay {
 
         <div class="text-center">
           <h3 class="text-2xl font-bold text-gray-900">
-            {{ currentDate | date:'MMMM' : 'es' }}
+            {{ getMonthName(currentDate) }}
           </h3>
-          <p class="text-sm text-gray-600">{{ currentDate | date:'yyyy' }}</p>
+          <p class="text-sm text-gray-600">{{ currentDate?.getFullYear() }}</p>
         </div>
 
         <button (click)="nextMonth()"
@@ -134,11 +134,18 @@ interface CalendarDay {
 export class AppointmentsCalendarComponent implements OnInit, OnChanges {
   @Input() appointments: any[] = [];
 
-  currentDate: Date = new Date();
+  currentDate: Date;
   calendarDays: CalendarDay[] = [];
   weekDays = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
 
+  constructor() {
+    this.currentDate = new Date();
+  }
+
   ngOnInit(): void {
+    if (!this.currentDate || !(this.currentDate instanceof Date)) {
+      this.currentDate = new Date();
+    }
     this.generateCalendar();
   }
 
@@ -250,5 +257,13 @@ export class AppointmentsCalendarComponent implements OnInit, OnChanges {
       'CANCELLED': 'bg-gradient-to-r from-red-500 to-pink-600 text-white'
     };
     return classes[normalizedStatus] || 'bg-gradient-to-r from-gray-400 to-gray-500 text-white';
+  }
+
+  getMonthName(date: Date | null | undefined): string {
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+      return '';
+    }
+    const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    return months[date.getMonth()] || '';
   }
 }
