@@ -12,4 +12,4 @@ WORKDIR /app
 RUN npm install -g http-server
 COPY --from=builder /app/dist/barbershop-frontend ./dist/barbershop-frontend
 EXPOSE 3000
-CMD ["http-server", "dist/barbershop-frontend", "-p", "3000"]
+CMD ["http-server", "dist/barbershop-frontend", "-p", "3000", "-s"]
