@@ -147,7 +147,7 @@ interface TimeSlotUI {
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                 </svg>
                 <p class="text-sm font-semibold text-gray-900">
-                  Horarios disponibles para {{ selectedDateString | date:'d MMMM':'' : 'es' }}
+                  Horarios disponibles para {{ formatDateForDisplay(selectedDateString) }}
                 </p>
               </div>
 
@@ -211,7 +211,7 @@ interface TimeSlotUI {
                class="bg-indigo-50 border-2 border-indigo-200 rounded-xl p-4 space-y-2">
             <p class="text-sm text-gray-700"><span class="font-semibold">Servicio:</span> {{ getServiceName() }}</p>
             <p class="text-sm text-gray-700"><span class="font-semibold">Barbero:</span> {{ getBarberName() }}</p>
-            <p class="text-sm text-gray-700"><span class="font-semibold">Fecha:</span> {{ selectedDateString | date:'d MMMM yyyy':'' : 'es' }}</p>
+            <p class="text-sm text-gray-700"><span class="font-semibold">Fecha:</span> {{ formatDateFullForDisplay(selectedDateString) }}</p>
             <p class="text-sm text-gray-700"><span class="font-semibold">Hora:</span> {{ appointmentForm.get('time')?.value }}</p>
           </div>
         </div>
@@ -436,6 +436,27 @@ export class AppointmentSchedulerComponent implements OnInit, OnChanges {
   getBarberName(): string {
     const barberId = this.appointmentForm.get('barberId')?.value;
     return this.barbers.find(b => b.userId === barberId)?.name || '';
+  }
+
+  formatDateForDisplay(dateString: string | null): string {
+    if (!dateString) return '';
+    // dateString format: YYYY-MM-DD
+    const date = new Date(dateString + 'T00:00:00');
+    const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    return `${day} de ${month}`;
+  }
+
+  formatDateFullForDisplay(dateString: string | null): string {
+    if (!dateString) return '';
+    // dateString format: YYYY-MM-DD
+    const date = new Date(dateString + 'T00:00:00');
+    const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    return `${day} de ${month} de ${year}`;
   }
 
   onSubmit(): void {
