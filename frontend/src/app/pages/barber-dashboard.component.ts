@@ -88,70 +88,138 @@ import { User } from '../models/user.model';
           <!-- Tab Content -->
           <div class="p-6">
 
-            <!-- Mis Citas Tab -->
+            <!-- Mis Citas Tab - Responsive Design -->
             <div *ngIf="activeTab === 'mis-citas'" class="tab-content">
-              <h2 class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-6">Mis Citas Programadas</h2>
+              <h2 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4 sm:mb-6">Mis Citas Programadas</h2>
 
-              <div class="overflow-x-auto">
+              <!-- Desktop Table View -->
+              <div class="hidden md:block overflow-x-auto">
                 <table class="w-full table-auto">
                   <thead>
                     <tr class="border-b-2 border-indigo-100">
-                      <th class="text-left py-4 px-4 font-semibold text-gray-700">Cliente</th>
-                      <th class="text-left py-4 px-4 font-semibold text-gray-700">Servicio</th>
-                      <th class="text-left py-4 px-4 font-semibold text-gray-700">Fecha</th>
-                      <th class="text-left py-4 px-4 font-semibold text-gray-700">Hora</th>
-                      <th class="text-left py-4 px-4 font-semibold text-gray-700">Estado</th>
-                      <th class="text-left py-4 px-4 font-semibold text-gray-700">Acciones</th>
+                      <th class="text-left py-3 px-3 lg:py-4 lg:px-4 font-semibold text-xs lg:text-sm text-gray-700">Cliente</th>
+                      <th class="text-left py-3 px-3 lg:py-4 lg:px-4 font-semibold text-xs lg:text-sm text-gray-700">Servicio</th>
+                      <th class="text-left py-3 px-3 lg:py-4 lg:px-4 font-semibold text-xs lg:text-sm text-gray-700">Fecha</th>
+                      <th class="text-left py-3 px-3 lg:py-4 lg:px-4 font-semibold text-xs lg:text-sm text-gray-700">Hora</th>
+                      <th class="text-left py-3 px-3 lg:py-4 lg:px-4 font-semibold text-xs lg:text-sm text-gray-700">Estado</th>
+                      <th class="text-left py-3 px-3 lg:py-4 lg:px-4 font-semibold text-xs lg:text-sm text-gray-700">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr *ngFor="let appointment of appointments" class="border-b border-gray-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200">
-                      <td class="py-4 px-4">
+                      <td class="py-3 px-3 lg:py-4 lg:px-4">
                         <div>
-                          <div class="text-sm font-semibold text-gray-900">{{ appointment.clientName }}</div>
+                          <div class="text-xs lg:text-sm font-semibold text-gray-900">{{ appointment.clientName }}</div>
                           <div class="text-xs text-gray-500">{{ appointment.clientPhone }}</div>
                         </div>
                       </td>
-                      <td class="py-4 px-4 text-sm font-medium text-gray-700">
+                      <td class="py-3 px-3 lg:py-4 lg:px-4 text-xs lg:text-sm font-medium text-gray-700">
                         {{ appointment.serviceName }}
                       </td>
-                      <td class="py-4 px-4 text-sm text-gray-700">
+                      <td class="py-3 px-3 lg:py-4 lg:px-4 text-xs lg:text-sm text-gray-700">
                         {{ appointment.date }}
                       </td>
-                      <td class="py-4 px-4 text-sm font-semibold text-gray-900">
+                      <td class="py-3 px-3 lg:py-4 lg:px-4 text-xs lg:text-sm font-semibold text-gray-900">
                         {{ appointment.time }}
                       </td>
-                      <td class="py-4 px-4">
+                      <td class="py-3 px-3 lg:py-4 lg:px-4">
                         <span [class]="getStatusClass(appointment.status)"
-                              class="px-3 py-1 text-xs font-bold rounded-full shadow-md">
+                              class="px-2 lg:px-3 py-1 text-xs font-bold rounded-full shadow-md">
                           {{ getStatusText(appointment.status) }}
                         </span>
                       </td>
-                      <td class="py-4 px-4 text-sm font-medium space-x-2">
+                      <td class="py-3 px-3 lg:py-4 lg:px-4 text-xs lg:text-sm font-medium space-x-1 lg:space-x-2">
                         <button *ngIf="appointment.status === 'PENDING'"
                                 (click)="confirmAppointment(appointment.id)"
-                                class="px-3 py-1.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-semibold rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-md">
+                                class="px-2 lg:px-3 py-1 lg:py-1.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-semibold rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-md">
                           Confirmar
                         </button>
                         <button *ngIf="appointment.status === 'CONFIRMED'"
                                 (click)="completeAppointment(appointment.id)"
-                                class="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-semibold rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-md">
+                                class="px-2 lg:px-3 py-1 lg:py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-semibold rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-md">
                           Completar
                         </button>
                         <button *ngIf="appointment.status === 'PENDING' || appointment.status === 'CONFIRMED'"
                                 (click)="cancelAppointment(appointment.id)"
-                                class="px-3 py-1.5 bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs font-semibold rounded-lg hover:from-red-600 hover:to-pink-700 transition-all duration-200 shadow-md">
+                                class="px-2 lg:px-3 py-1 lg:py-1.5 bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs font-semibold rounded-lg hover:from-red-600 hover:to-pink-700 transition-all duration-200 shadow-md">
                           Cancelar
                         </button>
                       </td>
                     </tr>
                     <tr *ngIf="appointments.length === 0">
-                      <td colspan="6" class="px-6 py-8 text-center text-gray-500 font-medium">
+                      <td colspan="6" class="px-4 py-8 text-center text-gray-500 font-medium">
                         No tienes citas programadas
                       </td>
                     </tr>
                   </tbody>
                 </table>
+              </div>
+
+              <!-- Mobile Card View -->
+              <div class="md:hidden space-y-3">
+                <div *ngFor="let appointment of appointments"
+                     class="bg-gradient-to-r from-white to-indigo-50 border-2 border-indigo-100 rounded-lg p-3 hover:shadow-lg transition-all duration-200">
+                  <div class="space-y-2">
+                    <!-- Cliente -->
+                    <div class="flex items-start gap-2">
+                      <span class="font-semibold text-gray-700 text-xs whitespace-nowrap">Cliente:</span>
+                      <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-gray-900 text-sm truncate">{{ appointment.clientName }}</p>
+                        <p class="text-xs text-gray-500">{{ appointment.clientPhone }}</p>
+                      </div>
+                    </div>
+
+                    <!-- Servicio -->
+                    <div class="flex items-center gap-2">
+                      <span class="font-semibold text-gray-700 text-xs whitespace-nowrap">Servicio:</span>
+                      <span class="text-sm text-gray-700">{{ appointment.serviceName }}</span>
+                    </div>
+
+                    <!-- Fecha y Hora -->
+                    <div class="flex gap-3">
+                      <div class="flex-1">
+                        <span class="font-semibold text-gray-700 text-xs">Fecha</span>
+                        <p class="text-sm text-gray-700">{{ appointment.date }}</p>
+                      </div>
+                      <div class="flex-1">
+                        <span class="font-semibold text-gray-700 text-xs">Hora</span>
+                        <p class="text-sm font-semibold text-gray-900">{{ appointment.time }}</p>
+                      </div>
+                    </div>
+
+                    <!-- Estado -->
+                    <div class="flex items-center gap-2">
+                      <span class="font-semibold text-gray-700 text-xs whitespace-nowrap">Estado:</span>
+                      <span [class]="getStatusClass(appointment.status)"
+                            class="px-2 py-1 text-xs font-bold rounded-full shadow-md">
+                        {{ getStatusText(appointment.status) }}
+                      </span>
+                    </div>
+
+                    <!-- Acciones -->
+                    <div class="flex gap-2 pt-2 flex-wrap">
+                      <button *ngIf="appointment.status === 'PENDING'"
+                              (click)="confirmAppointment(appointment.id)"
+                              class="flex-1 px-2 py-1.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-semibold rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-md">
+                        Confirmar
+                      </button>
+                      <button *ngIf="appointment.status === 'CONFIRMED'"
+                              (click)="completeAppointment(appointment.id)"
+                              class="flex-1 px-2 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-semibold rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 shadow-md">
+                        Completar
+                      </button>
+                      <button *ngIf="appointment.status === 'PENDING' || appointment.status === 'CONFIRMED'"
+                              (click)="cancelAppointment(appointment.id)"
+                              class="flex-1 px-2 py-1.5 bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs font-semibold rounded-lg hover:from-red-600 hover:to-pink-700 transition-all duration-200 shadow-md">
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div *ngIf="appointments.length === 0" class="text-center py-8 text-gray-500 font-medium bg-gradient-to-br from-gray-50 to-slate-50 rounded-lg border-2 border-gray-200">
+                  No tienes citas programadas
+                </div>
               </div>
             </div>
 
