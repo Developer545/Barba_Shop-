@@ -23,6 +23,7 @@
     "@fullcalendar/interaction": "^6.1.19",
     "@fullcalendar/list": "^6.1.19",
     "@fullcalendar/timegrid": "^6.1.19",
+    "angular-calendar-scheduler": "^20.1.6",
     "rxjs": "7.8.1",
     "sweetalert2": "^11.23.0",
     "tslib": "2.6.0",

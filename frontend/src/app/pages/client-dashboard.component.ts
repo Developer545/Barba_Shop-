@@ -7,11 +7,13 @@ import { AuthService } from '../services/auth.service';
 import { Service, ServiceCategory } from '../models/service.model';
 import { Barber } from '../models/barber.model';
 import { User } from '../models/user.model';
+import { AppointmentSchedulerComponent } from './appointment-scheduler.component';
+import { AppointmentsCalendarComponent } from './appointments-calendar.component';
 
 @Component({
   selector: 'app-client-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule, AppointmentSchedulerComponent, AppointmentsCalendarComponent],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <!-- Navigation Header -->
@@ -177,7 +179,7 @@ import { User } from '../models/user.model';
               </div>
             </div>
 
-            <!-- Mis Citas Tab -->
+            <!-- Mis Citas Tab - Interactive Calendar View -->
             <div *ngIf="activeTab === 'mis-citas'" class="tab-content">
               <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Mis Citas</h2>
@@ -190,75 +192,84 @@ import { User } from '../models/user.model';
                 </button>
               </div>
 
-              <div class="overflow-x-auto">
-                <table class="w-full table-auto">
-                  <thead>
-                    <tr class="border-b-2 border-indigo-100">
-                      <th class="text-left py-4 px-4 font-semibold text-gray-700">Servicio</th>
-                      <th class="text-left py-4 px-4 font-semibold text-gray-700">Barbero</th>
-                      <th class="text-left py-4 px-4 font-semibold text-gray-700">Fecha</th>
-                      <th class="text-left py-4 px-4 font-semibold text-gray-700">Hora</th>
-                      <th class="text-left py-4 px-4 font-semibold text-gray-700">Estado</th>
-                      <th class="text-left py-4 px-4 font-semibold text-gray-700">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let appointment of appointments" class="border-b border-gray-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200">
-                      <td class="py-4 px-4 text-sm font-semibold text-gray-900">
-                        {{ appointment.serviceName }}
-                      </td>
-                      <td class="py-4 px-4 text-sm font-medium text-gray-700">
-                        {{ appointment.barberName }}
-                      </td>
-                      <td class="py-4 px-4 text-sm text-gray-700">
-                        {{ appointment.date }}
-                      </td>
-                      <td class="py-4 px-4 text-sm font-semibold text-gray-900">
-                        {{ appointment.time }}
-                      </td>
-                      <td class="py-4 px-4">
-                        <span [class]="getStatusClass(appointment.status)"
-                              class="px-3 py-1 text-xs font-bold rounded-full shadow-md">
-                          {{ getStatusText(appointment.status) }}
-                        </span>
-                      </td>
-                      <td class="py-4 px-4">
-                        <button *ngIf="appointment.status === 'PENDING' || appointment.status === 'CONFIRMED'"
-                                (click)="cancelMyAppointment(appointment.id)"
-                                class="px-3 py-1.5 bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs font-semibold rounded-lg hover:from-red-600 hover:to-pink-700 transition-all duration-200 shadow-md">
-                          Cancelar
-                        </button>
-                        <span *ngIf="appointment.status !== 'PENDING' && appointment.status !== 'CONFIRMED'"
-                              class="text-gray-400 text-sm">
-                          -
-                        </span>
-                      </td>
-                    </tr>
-                    <tr *ngIf="appointments.length === 0">
-                      <td colspan="6" class="px-6 py-12 text-center">
-                        <svg class="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
-                        <p class="text-gray-500 font-semibold">No tienes citas agendadas</p>
-                        <button (click)="openAppointmentModal()"
-                                class="mt-4 px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-xl">
-                          Agendar Primera Cita
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div class="space-y-6">
+                <!-- Calendar View -->
+                <app-appointments-calendar [appointments]="appointments"></app-appointments-calendar>
+
+                <!-- List View -->
+                <div class="bg-white rounded-2xl shadow-lg border border-indigo-100 p-6">
+                  <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                    <svg class="w-6 h-6 mr-3 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                    Detalles de Citas
+                  </h3>
+
+                  <div *ngIf="appointments.length === 0" class="text-center py-12 bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl border-2 border-gray-200">
+                    <svg class="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <p class="text-gray-500 font-semibold mb-4">No tienes citas agendadas</p>
+                    <button (click)="openAppointmentModal()"
+                            class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-xl">
+                      Agendar Primera Cita
+                    </button>
+                  </div>
+
+                  <div *ngIf="appointments.length > 0" class="space-y-3">
+                    <div *ngFor="let appointment of appointments"
+                         class="bg-gradient-to-r from-white to-indigo-50 border-2 border-indigo-100 rounded-xl p-4 hover:shadow-lg transition-all duration-200">
+                      <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                          <p class="font-bold text-gray-900 text-lg">{{ appointment.serviceName }}</p>
+                          <div class="mt-2 space-y-1 text-sm text-gray-600">
+                            <p>
+                              <span class="font-semibold">Barbero:</span>
+                              <span class="text-gray-700 ml-2">{{ appointment.barberName }}</span>
+                            </p>
+                            <p>
+                              <span class="font-semibold">Fecha y Hora:</span>
+                              <span class="text-gray-700 ml-2">
+                                {{ appointment.date | date:'d MMMM':'' : 'es' }} - {{ appointment.time }}
+                              </span>
+                            </p>
+                            <p *ngIf="appointment.notes">
+                              <span class="font-semibold">Notas:</span>
+                              <span class="text-gray-700 ml-2">{{ appointment.notes }}</span>
+                            </p>
+                          </div>
+                        </div>
+                        <div class="flex flex-col items-end space-y-2">
+                          <span [class]="getStatusClass(appointment.status)"
+                                class="px-4 py-1.5 text-xs font-bold rounded-full shadow-md">
+                            {{ getStatusText(appointment.status) }}
+                          </span>
+                          <button *ngIf="appointment.status === 'PENDING' || appointment.status === 'CONFIRMED'"
+                                  (click)="cancelMyAppointment(appointment.id)"
+                                  class="px-4 py-1.5 bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs font-semibold rounded-lg hover:from-red-600 hover:to-pink-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105">
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </main>
 
-      <!-- Modal para Agendar Cita -->
+      <!-- Modal para Agendar Cita - New Interactive Calendar Scheduler -->
       <div *ngIf="showAppointmentModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div class="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border-2 border-white/40 p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all duration-300">
-          <div class="flex justify-between items-center mb-6 pb-4 border-b-2 border-gradient-to-r from-indigo-100 to-purple-100">
-            <h2 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Agendar Nueva Cita</h2>
+        <div class="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border-2 border-white/40 p-8 w-full max-w-4xl max-h-[95vh] overflow-y-auto transform transition-all duration-300">
+          <div class="flex justify-between items-center mb-6 pb-4 border-b-2 border-indigo-200">
+            <h2 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              <svg class="w-8 h-8 inline-block mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Agendar Nueva Cita
+            </h2>
             <button (click)="closeAppointmentModal()"
                     class="h-10 w-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-red-100 to-pink-100 text-red-600 hover:from-red-200 hover:to-pink-200 transition-all duration-200 transform hover:scale-110 shadow-md">
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -267,114 +278,13 @@ import { User } from '../models/user.model';
             </button>
           </div>
 
-          <form [formGroup]="appointmentForm" (ngSubmit)="onSubmitAppointment()">
-            <div class="space-y-5">
-              <!-- Servicio -->
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Servicio</label>
-                <select formControlName="serviceId"
-                        class="w-full px-4 py-3 border-2 border-indigo-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white hover:border-indigo-300 transition-all duration-200 cursor-pointer shadow-sm font-medium">
-                  <option value="">Selecciona un servicio</option>
-                  <option *ngFor="let service of services" [value]="service.id">
-                    {{ service.name }} - \${{ service.price }} ({{ service.duration }} min)
-                  </option>
-                </select>
-              </div>
-
-              <!-- Barbero -->
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Barbero</label>
-                <select formControlName="barberId"
-                        class="w-full px-4 py-3 border-2 border-indigo-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white hover:border-indigo-300 transition-all duration-200 cursor-pointer shadow-sm font-medium">
-                  <option value="">Selecciona un barbero</option>
-                  <option *ngFor="let barber of barbers" [value]="barber.userId">
-                    {{ barber.name }} (★ {{ barber.rating }})
-                  </option>
-                </select>
-              </div>
-
-              <!-- Fecha -->
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Fecha</label>
-                <input type="date" formControlName="date" [min]="minDate"
-                       class="w-full px-4 py-3 border-2 border-indigo-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white hover:border-indigo-300 transition-all duration-200 shadow-sm font-medium">
-              </div>
-
-              <!-- Hora - Improved Time Slot Selection -->
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">Selecciona una hora</label>
-
-                <!-- Loading State -->
-                <div *ngIf="isLoadingSlots" class="flex items-center justify-center py-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
-                  <svg class="animate-spin h-6 w-6 text-indigo-600 mr-3" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span class="text-indigo-600 font-medium">Cargando horarios disponibles...</span>
-                </div>
-
-                <!-- Error State -->
-                <div *ngIf="slotsLoadError && !isLoadingSlots" class="bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-200 rounded-xl p-4 mb-4">
-                  <p class="text-red-600 font-medium flex items-start">
-                    <svg class="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                    </svg>
-                    {{ slotsLoadError }}
-                  </p>
-                </div>
-
-                <!-- Time Slots Grid (Requires date and barber to be selected) -->
-                <div *ngIf="!isLoadingSlots && !allSlotsTaken && appointmentForm.get('date')?.value && appointmentForm.get('barberId')?.value" class="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                  <button *ngFor="let slot of availableTimeSlots"
-                          type="button"
-                          (click)="appointmentForm.patchValue({ time: slot })"
-                          [class.ring-2]="appointmentForm.get('time')?.value === slot"
-                          [class.ring-indigo-600]="appointmentForm.get('time')?.value === slot"
-                          [class.bg-gradient-to-br]="true"
-                          [class.from-green-400]="true"
-                          [class.to-emerald-500]="true"
-                          [class.text-white]="appointmentForm.get('time')?.value === slot"
-                          [class.bg-white]="appointmentForm.get('time')?.value !== slot"
-                          [class.text-indigo-600]="appointmentForm.get('time')?.value !== slot"
-                          [class.border-2]="appointmentForm.get('time')?.value !== slot"
-                          [class.border-indigo-200]="appointmentForm.get('time')?.value !== slot"
-                          [class.hover:border-indigo-400]="appointmentForm.get('time')?.value !== slot"
-                          [class.shadow-lg]="appointmentForm.get('time')?.value === slot"
-                          [class.shadow-md]="appointmentForm.get('time')?.value !== slot"
-                          class="py-3 px-2 rounded-lg font-semibold text-sm transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    {{ slot }}
-                  </button>
-                </div>
-
-                <!-- Empty State -->
-                <div *ngIf="!isLoadingSlots && !appointmentForm.get('date')?.value && !appointmentForm.get('barberId')?.value"
-                     class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-6 text-center border-2 border-gray-200">
-                  <svg class="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                  <p class="text-gray-600 font-medium">Selecciona un barbero y una fecha para ver los horarios disponibles</p>
-                </div>
-              </div>
-
-              <!-- Notas -->
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Notas adicionales (opcional)</label>
-                <textarea formControlName="notes" rows="3"
-                          class="w-full px-4 py-3 border-2 border-indigo-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white hover:border-indigo-300 transition-all duration-200 shadow-sm font-medium resize-none"></textarea>
-              </div>
-            </div>
-
-            <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
-              <button type="button" (click)="closeAppointmentModal()"
-                      class="px-6 py-2.5 bg-gradient-to-r from-gray-100 to-slate-100 hover:from-gray-200 hover:to-slate-200 text-gray-700 font-semibold rounded-xl transition-all duration-200 shadow-md">
-                Cancelar
-              </button>
-              <button type="submit" [disabled]="!appointmentForm.valid"
-                      class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-md hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
-                Confirmar Cita
-              </button>
-            </div>
-          </form>
+          <!-- New Appointment Scheduler Component -->
+          <app-appointment-scheduler
+            [services]="services"
+            [barbers]="barbers"
+            (cancel)="closeAppointmentModal()"
+            (submit)="onSubmitAppointment($event)">
+          </app-appointment-scheduler>
         </div>
       </div>
     </div>
@@ -556,34 +466,24 @@ export class ClientDashboardComponent implements OnInit {
     this.allSlotsTaken = false;
   }
 
-  onSubmitAppointment(): void {
-    if (this.appointmentForm.valid) {
-      const appointmentData = {
-        serviceId: this.appointmentForm.value.serviceId,
-        barberId: this.appointmentForm.value.barberId,
-        date: this.appointmentForm.value.date,
-        time: this.appointmentForm.value.time,
-        notes: this.appointmentForm.value.notes || ''
-      };
+  onSubmitAppointment(appointmentData: any): void {
+    console.log('DEBUG - Sending appointment data:', appointmentData);
+    console.log('DEBUG - serviceId type:', typeof appointmentData.serviceId);
+    console.log('DEBUG - barberId type:', typeof appointmentData.barberId);
+    console.log('DEBUG - date:', appointmentData.date);
+    console.log('DEBUG - time:', appointmentData.time);
 
-      console.log('DEBUG - Sending appointment data:', appointmentData);
-      console.log('DEBUG - serviceId type:', typeof appointmentData.serviceId);
-      console.log('DEBUG - barberId type:', typeof appointmentData.barberId);
-      console.log('DEBUG - date:', appointmentData.date);
-      console.log('DEBUG - time:', appointmentData.time);
-
-      this.dataService.createAppointment(appointmentData).subscribe({
-        next: (appointment) => {
-          alert('Cita agendada exitosamente!');
-          this.closeAppointmentModal();
-          this.loadAppointments();
-        },
-        error: (error) => {
-          console.error('Error creating appointment:', error);
-          alert('Error al agendar cita: ' + (error.error?.message || 'Error desconocido'));
-        }
-      });
-    }
+    this.dataService.createAppointment(appointmentData).subscribe({
+      next: (appointment) => {
+        alert('¡Cita agendada exitosamente! El barbero confirmará tu cita pronto.');
+        this.closeAppointmentModal();
+        this.loadAppointments();
+      },
+      error: (error) => {
+        console.error('Error creating appointment:', error);
+        alert('Error al agendar cita: ' + (error.error?.message || 'Error desconocido'));
+      }
+    });
   }
 
   cancelMyAppointment(appointmentId: number): void {
