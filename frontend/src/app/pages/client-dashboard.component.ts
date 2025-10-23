@@ -300,14 +300,60 @@ import { User } from '../models/user.model';
                        class="w-full px-4 py-3 border-2 border-indigo-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white hover:border-indigo-300 transition-all duration-200 shadow-sm font-medium">
               </div>
 
-              <!-- Hora -->
+              <!-- Hora - Improved Time Slot Selection -->
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Hora</label>
-                <select formControlName="time"
-                        class="w-full px-4 py-3 border-2 border-indigo-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white hover:border-indigo-300 transition-all duration-200 cursor-pointer shadow-sm font-medium">
-                  <option value="">Selecciona una hora</option>
-                  <option *ngFor="let slot of availableTimeSlots" [value]="slot">{{ slot }}</option>
-                </select>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">Selecciona una hora</label>
+
+                <!-- Loading State -->
+                <div *ngIf="isLoadingSlots" class="flex items-center justify-center py-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
+                  <svg class="animate-spin h-6 w-6 text-indigo-600 mr-3" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span class="text-indigo-600 font-medium">Cargando horarios disponibles...</span>
+                </div>
+
+                <!-- Error State -->
+                <div *ngIf="slotsLoadError && !isLoadingSlots" class="bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-200 rounded-xl p-4 mb-4">
+                  <p class="text-red-600 font-medium flex items-start">
+                    <svg class="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                    </svg>
+                    {{ slotsLoadError }}
+                  </p>
+                </div>
+
+                <!-- Time Slots Grid (Requires date and barber to be selected) -->
+                <div *ngIf="!isLoadingSlots && !allSlotsTaken && appointmentForm.get('date')?.value && appointmentForm.get('barberId')?.value" class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  <button *ngFor="let slot of availableTimeSlots"
+                          type="button"
+                          (click)="appointmentForm.patchValue({ time: slot })"
+                          [class.ring-2]="appointmentForm.get('time')?.value === slot"
+                          [class.ring-indigo-600]="appointmentForm.get('time')?.value === slot"
+                          [class.bg-gradient-to-br]="true"
+                          [class.from-green-400]="true"
+                          [class.to-emerald-500]="true"
+                          [class.text-white]="appointmentForm.get('time')?.value === slot"
+                          [class.bg-white]="appointmentForm.get('time')?.value !== slot"
+                          [class.text-indigo-600]="appointmentForm.get('time')?.value !== slot"
+                          [class.border-2]="appointmentForm.get('time')?.value !== slot"
+                          [class.border-indigo-200]="appointmentForm.get('time')?.value !== slot"
+                          [class.hover:border-indigo-400]="appointmentForm.get('time')?.value !== slot"
+                          [class.shadow-lg]="appointmentForm.get('time')?.value === slot"
+                          [class.shadow-md]="appointmentForm.get('time')?.value !== slot"
+                          class="py-3 px-2 rounded-lg font-semibold text-sm transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    {{ slot }}
+                  </button>
+                </div>
+
+                <!-- Empty State -->
+                <div *ngIf="!isLoadingSlots && !appointmentForm.get('date')?.value && !appointmentForm.get('barberId')?.value"
+                     class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-6 text-center border-2 border-gray-200">
+                  <svg class="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <p class="text-gray-600 font-medium">Selecciona un barbero y una fecha para ver los horarios disponibles</p>
+                </div>
               </div>
 
               <!-- Notas -->
@@ -368,6 +414,12 @@ export class ClientDashboardComponent implements OnInit {
   availableTimeSlots: string[] = [];
   minDate: string = '';
 
+  // Availability tracking
+  isLoadingSlots: boolean = false;
+  slotsLoadError: string = '';
+  selectedBarberUnavailableMessage: string = '';
+  allSlotsTaken: boolean = false;
+
   tabs = [
     { id: 'servicios', name: 'Servicios', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
     { id: 'barberos', name: 'Barberos', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
@@ -396,8 +448,62 @@ export class ClientDashboardComponent implements OnInit {
     console.log('DEBUG - LocalStorage token:', localStorage.getItem('token'));
     this.loadData();
     this.loadAppointments();
-    this.generateTimeSlots();
     this.setMinDate();
+    this.setupFormValueListeners();
+  }
+
+  setupFormValueListeners(): void {
+    // Watch for barberId and date changes to load available slots dynamically
+    this.appointmentForm.get('barberId')?.valueChanges.subscribe(() => {
+      this.onBarberOrDateChange();
+    });
+
+    this.appointmentForm.get('date')?.valueChanges.subscribe(() => {
+      this.onBarberOrDateChange();
+    });
+  }
+
+  onBarberOrDateChange(): void {
+    const barberId = this.appointmentForm.get('barberId')?.value;
+    const date = this.appointmentForm.get('date')?.value;
+
+    // Clear previous selections and errors
+    this.appointmentForm.patchValue({ time: '' }, { emitEvent: false });
+    this.slotsLoadError = '';
+    this.selectedBarberUnavailableMessage = '';
+    this.allSlotsTaken = false;
+
+    if (barberId && date) {
+      this.loadAvailableSlots(barberId, date);
+    } else {
+      this.availableTimeSlots = [];
+    }
+  }
+
+  loadAvailableSlots(barberId: any, date: string): void {
+    this.isLoadingSlots = true;
+    this.availableTimeSlots = [];
+
+    this.dataService.getAvailableTimeSlots(barberId, date).subscribe({
+      next: (slots) => {
+        this.availableTimeSlots = slots;
+        this.isLoadingSlots = false;
+
+        if (slots.length === 0) {
+          this.allSlotsTaken = true;
+          this.slotsLoadError = 'No hay horarios disponibles para este barbero en la fecha seleccionada. Por favor, elige otra fecha.';
+        } else {
+          this.allSlotsTaken = false;
+        }
+      },
+      error: (error) => {
+        this.isLoadingSlots = false;
+        this.availableTimeSlots = [];
+        this.allSlotsTaken = true;
+        console.error('Error loading available slots:', error);
+        this.slotsLoadError = 'No se pudieron cargar los horarios disponibles. Por favor, intenta de nuevo.';
+      }
+    });
   }
 
   loadData(): void {
@@ -443,6 +549,11 @@ export class ClientDashboardComponent implements OnInit {
   closeAppointmentModal(): void {
     this.showAppointmentModal = false;
     this.appointmentForm.reset();
+    this.availableTimeSlots = [];
+    this.isLoadingSlots = false;
+    this.slotsLoadError = '';
+    this.selectedBarberUnavailableMessage = '';
+    this.allSlotsTaken = false;
   }
 
   onSubmitAppointment(): void {
@@ -510,13 +621,6 @@ export class ClientDashboardComponent implements OnInit {
     return statusTexts[status] || status;
   }
 
-  generateTimeSlots(): void {
-    this.availableTimeSlots = [
-      '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
-      '11:00', '11:30', '12:00', '12:30', '14:00', '14:30',
-      '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'
-    ];
-  }
 
   setMinDate(): void {
     const today = new Date();
