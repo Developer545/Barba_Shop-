@@ -243,7 +243,7 @@ import { AppointmentsCalendarComponent } from './appointments-calendar.component
                                 class="px-3 sm:px-4 py-1 sm:py-1.5 text-xs font-bold rounded-full shadow-md w-full sm:w-auto text-center">
                             {{ getStatusText(appointment.status) }}
                           </span>
-                          <button *ngIf="appointment.status === 'PENDING' || appointment.status === 'CONFIRMED'"
+                          <button *ngIf="(appointment.status | uppercase) === 'PENDING' || (appointment.status | uppercase) === 'CONFIRMED'"
                                   (click)="cancelMyAppointment(appointment.id)"
                                   class="w-full px-3 sm:px-4 py-1.5 sm:py-1.5 bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs sm:text-sm font-semibold rounded-lg hover:from-red-600 hover:to-pink-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105">
                             Cancelar
@@ -443,23 +443,25 @@ export class ClientDashboardComponent implements OnInit {
   }
 
   getStatusClass(status: string): string {
+    const normalizedStatus = status ? status.toUpperCase() : 'PENDING';
     const statusClasses: any = {
       'PENDING': 'bg-gradient-to-r from-yellow-500 to-orange-600 text-white',
       'CONFIRMED': 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white',
       'COMPLETED': 'bg-gradient-to-r from-green-500 to-emerald-600 text-white',
       'CANCELLED': 'bg-gradient-to-r from-red-500 to-pink-600 text-white'
     };
-    return statusClasses[status] || 'bg-gradient-to-r from-gray-400 to-gray-500 text-white';
+    return statusClasses[normalizedStatus] || 'bg-gradient-to-r from-gray-400 to-gray-500 text-white';
   }
 
   getStatusText(status: string): string {
+    const normalizedStatus = status ? status.toUpperCase() : 'PENDING';
     const statusTexts: any = {
       'PENDING': 'Pendiente',
       'CONFIRMED': 'Confirmada',
       'COMPLETED': 'Completada',
       'CANCELLED': 'Cancelada'
     };
-    return statusTexts[status] || status;
+    return statusTexts[normalizedStatus] || status;
   }
 
   setMinDate(): void {

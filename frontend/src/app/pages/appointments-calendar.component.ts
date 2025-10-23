@@ -196,10 +196,10 @@ export class AppointmentsCalendarComponent implements OnInit, OnChanges {
       })
       .map(apt => ({
         dateString: this.normalizeDateString(apt.date),
-        time: apt.time,
-        barberName: apt.barberName,
-        serviceName: apt.serviceName,
-        status: apt.status,
+        time: apt.time || 'TBD',
+        barberName: apt.barberName || 'Barbero',
+        serviceName: apt.serviceName || 'Servicio',
+        status: (apt.status || apt.appointmentStatus || 'PENDING').toUpperCase(),
         id: apt.id
       }));
 
@@ -242,12 +242,13 @@ export class AppointmentsCalendarComponent implements OnInit, OnChanges {
   }
 
   getAppointmentClass(status: string): string {
+    const normalizedStatus = status ? status.toUpperCase() : 'PENDING';
     const classes: { [key: string]: string } = {
       'PENDING': 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white',
       'CONFIRMED': 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white',
       'COMPLETED': 'bg-gradient-to-r from-green-500 to-emerald-600 text-white',
       'CANCELLED': 'bg-gradient-to-r from-red-500 to-pink-600 text-white'
     };
-    return classes[status] || 'bg-gradient-to-r from-gray-400 to-gray-500 text-white';
+    return classes[normalizedStatus] || 'bg-gradient-to-r from-gray-400 to-gray-500 text-white';
   }
 }

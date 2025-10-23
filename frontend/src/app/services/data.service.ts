@@ -381,11 +381,22 @@ export class DataService {
     const headers = this.authService.getAuthHeaders();
     return this.http.get<any[]>(`${this.apiUrl}/client/appointments`, { headers })
       .pipe(
+        map(appointments => this.enrichAppointmentsWithNames(appointments)),
         catchError(error => {
           console.error('Error getting appointments:', error);
           return of([]);
         })
       );
+  }
+
+  // Enriquecer citas con nombres de servicio y barbero
+  private enrichAppointmentsWithNames(appointments: any[]): any[] {
+    return appointments.map(apt => ({
+      ...apt,
+      serviceName: apt.serviceName || 'Servicio desconocido',
+      barberName: apt.barberName || 'Barbero desconocido',
+      status: apt.status || apt.appointmentStatus || 'PENDING'
+    }));
   }
 
   createAppointment(appointment: any): Observable<any> {
@@ -599,13 +610,23 @@ export class DataService {
   // Obtener horarios disponibles para una fecha
   getAvailableTimeSlots(barberId: number, date: string): Observable<string[]> {
     const headers = this.authService.getAuthHeaders();
+    // Intentar primero el endpoint de cliente, fallback a admin
     return this.http.get<string[]>(
-      `${this.apiUrl}/admin/barbers/${barberId}/available-slots?date=${date}`,
+      `${this.apiUrl}/client/available-slots?barberId=${barberId}&date=${date}`,
       { headers }
     ).pipe(
       catchError(error => {
-        console.error('Error fetching available time slots:', error);
-        return of([]);
+        console.error('Error fetching available time slots from client endpoint, trying admin endpoint:', error);
+        // Fallback a endpoint de admin si el de cliente no existe
+        return this.http.get<string[]>(
+          `${this.apiUrl}/admin/barbers/${barberId}/available-slots?date=${date}`,
+          { headers }
+        ).pipe(
+          catchError(adminError => {
+            console.error('Error fetching available time slots from both endpoints:', adminError);
+            return of([]);
+          })
+        );
       })
     );
   }
