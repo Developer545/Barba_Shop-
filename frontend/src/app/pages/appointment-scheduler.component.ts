@@ -92,7 +92,7 @@ interface TimeSlotUI {
                 </button>
                 <div class="text-center flex-1">
                   <p class="text-white font-bold text-lg">
-                    {{ currentMonth | date:'MMMM':'' : 'es' | uppercase }} {{ currentMonth | date:'yyyy' }}
+                    {{ currentMonth | date:'MMMM' : 'es' | uppercase }} {{ currentMonth | date:'yyyy' }}
                   </p>
                 </div>
                 <button type="button"
