@@ -6,10 +6,9 @@ RUN npm install --legacy-peer-deps
 COPY . .
 RUN chmod +x node_modules/.bin/* && ./node_modules/.bin/ng build
 
-# Stage 2: Runtime
-FROM node:20-alpine
-WORKDIR /app
-RUN npm install -g http-server
-COPY --from=builder /app/dist/barbershop-frontend ./dist/barbershop-frontend
+# Stage 2: Runtime with Nginx
+FROM nginx:alpine
+COPY --from=builder /app/dist/barbershop-frontend /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 3000
-CMD ["http-server", "dist/barbershop-frontend", "-p", "3000", "-s"]
+CMD ["nginx", "-g", "daemon off;"]
