@@ -292,6 +292,11 @@ export class AppointmentSchedulerComponent implements OnInit, OnChanges {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // Obtener el barbero seleccionado y sus días de trabajo
+    const selectedBarberId = this.appointmentForm.get('barberId')?.value;
+    const selectedBarber = this.barbers.find(b => b.userId === selectedBarberId);
+    const barberWorkDays = selectedBarber?.schedule?.map(s => s.dayOfWeek) || [];
+
     // Add previous month's days
     const prevMonthLastDay = new Date(year, month, 0).getDate();
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
@@ -311,7 +316,12 @@ export class AppointmentSchedulerComponent implements OnInit, OnChanges {
     // Add current month's days
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
-      const isDisabled = date < today;
+      const dateIsPast = date < today;
+      const dayOfWeek = date.getDay();
+      // En JavaScript: 0 = domingo, 1 = lunes, ..., 6 = sábado
+      // Pero el backend usa: 0 = domingo, 1 = lunes, etc.
+      const barberWorksThisDay = barberWorkDays.includes(dayOfWeek);
+      const isDisabled = dateIsPast || !barberWorksThisDay;
       const dateStr = this.formatDateToString(date);
 
       this.calendarDays.push({
@@ -359,7 +369,10 @@ export class AppointmentSchedulerComponent implements OnInit, OnChanges {
     this.appointmentForm.patchValue({ barberId: barber.userId });
     this.selectedDateString = null;
     this.timeSlots = [];
-    this.generateCalendarDays();
+    // Regenerar el calendario para mostrar solo los días que trabaja este barbero
+    setTimeout(() => {
+      this.generateCalendarDays();
+    }, 100);
   }
 
   selectTime(time: string): void {
@@ -377,36 +390,59 @@ export class AppointmentSchedulerComponent implements OnInit, OnChanges {
 
     this.isLoadingSlots = true;
     const barberId = this.appointmentForm.get('barberId')?.value;
+    const selectedBarber = this.barbers.find(b => b.userId === barberId);
 
-    this.dataService.getAvailableTimeSlots(barberId, this.selectedDateString).subscribe({
-      next: (availableSlots) => {
-        // Generate 15-minute slots for the entire day
-        this.timeSlots = this.generateTimeSlots(availableSlots);
-        this.isLoadingSlots = false;
-      },
-      error: (error) => {
-        console.error('Error loading time slots:', error);
-        this.timeSlots = [];
-        this.isLoadingSlots = false;
-      }
-    });
+    // Obtener el día de la semana de la fecha seleccionada
+    const selectedDate = new Date(this.selectedDateString + 'T00:00:00');
+    const dayOfWeek = selectedDate.getDay();
+
+    // Encontrar el horario del barbero para este día
+    const barberSchedule = selectedBarber?.schedule?.find(s => s.dayOfWeek === dayOfWeek);
+
+    if (!barberSchedule || !selectedBarber) {
+      this.timeSlots = [];
+      this.isLoadingSlots = false;
+      return;
+    }
+
+    // Generar slots basados en el horario del barbero
+    this.timeSlots = this.generateTimeSlotsFromBarberSchedule(barberSchedule);
+    this.isLoadingSlots = false;
   }
 
-  generateTimeSlots(availableSlots: string[]): TimeSlotUI[] {
-    // Generate slots from 8 AM to 6 PM, every 15 minutes
+  generateTimeSlotsFromBarberSchedule(schedule: any): TimeSlotUI[] {
     const slots: TimeSlotUI[] = [];
-    const startHour = 8;
-    const endHour = 18;
 
-    for (let hour = startHour; hour < endHour; hour++) {
-      for (let minute = 0; minute < 60; minute += 15) {
-        const time = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-        const isAvailable = availableSlots.includes(time);
-        slots.push({
-          time,
-          isAvailable,
-          isSelected: time === this.appointmentForm.get('time')?.value
-        });
+    if (!schedule || !schedule.startTime || !schedule.endTime) {
+      return slots;
+    }
+
+    // Parsear las horas: "08:00" -> { hour: 8, minute: 0 }
+    const parseTime = (timeStr: string) => {
+      const [hour, minute] = timeStr.split(':').map(Number);
+      return { hour, minute };
+    };
+
+    const startTime = parseTime(schedule.startTime);
+    const endTime = parseTime(schedule.endTime);
+
+    // Generar slots cada 30 minutos
+    let currentHour = startTime.hour;
+    let currentMinute = startTime.minute;
+
+    while (currentHour < endTime.hour || (currentHour === endTime.hour && currentMinute < endTime.minute)) {
+      const time = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
+      slots.push({
+        time,
+        isAvailable: true,
+        isSelected: time === this.appointmentForm.get('time')?.value
+      });
+
+      // Incrementar 30 minutos
+      currentMinute += 30;
+      if (currentMinute >= 60) {
+        currentMinute = 0;
+        currentHour += 1;
       }
     }
 
