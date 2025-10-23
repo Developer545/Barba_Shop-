@@ -1,0 +1,18 @@
+{
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.saveActions.organizeImports": true,
+    "java.format.settings.url": null,
+    "java.format.settings.profile": null,
+    "java.import.maven.enabled": true,
+    "java.import.gradle.enabled": false,
+    "java.maven.downloadSources": true,
+    "java.maven.downloadJavadoc": false,
+    "spring-boot.ls.checkJVM": false,
+    "files.exclude": {
+        "**/target": true,
+        "**/.mvn": true
+    },
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.inlayHints.parameterNames.enabled": "literals",
+    "terminal.integrated.defaultProfile.windows": "Command Prompt"
+}

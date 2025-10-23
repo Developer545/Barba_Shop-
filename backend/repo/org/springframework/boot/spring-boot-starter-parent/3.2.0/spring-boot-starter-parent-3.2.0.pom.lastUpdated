@@ -1,0 +1,4 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Sep 27 18:51:01 CST 2025
+https\://repo1.maven.org/maven2/.error=Could not transfer artifact org.springframework.boot\:spring-boot-starter-parent\:pom\:3.2.0 from/to central-ssl-safe (https\://repo1.maven.org/maven2)\: Received fatal alert\: protocol_version
+@default-central-ssl-safe-https\://repo1.maven.org/maven2/.lastUpdated=1759020661077

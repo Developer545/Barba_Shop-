@@ -1,0 +1,33 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "🚀 Run BarberShop Backend",
+            "request": "launch",
+            "mainClass": "com.barbershop.BarberShopApplication",
+            "projectName": "barbershop-backend",
+            "args": "",
+            "vmArgs": "-Dspring.profiles.active=dev",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "env": {
+                "SPRING_PROFILES_ACTIVE": "dev"
+            }
+        },
+        {
+            "type": "java",
+            "name": "🐛 Debug BarberShop Backend",
+            "request": "launch",
+            "mainClass": "com.barbershop.BarberShopApplication",
+            "projectName": "barbershop-backend",
+            "args": "",
+            "vmArgs": "-Dspring.profiles.active=dev",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "env": {
+                "SPRING_PROFILES_ACTIVE": "dev"
+            }
+        }
+    ]
+}
