@@ -214,6 +214,19 @@ export class DataService {
       );
   }
 
+  // Obtener el perfil del barbero autenticado
+  getMyBarberProfile(): Observable<Barber | undefined> {
+    const headers = this.authService.getAuthHeaders();
+    return this.http.get<any>(`${this.apiUrl}/barber/profile`, { headers })
+      .pipe(
+        map(barber => this.mapBackendBarberToFrontend(barber)),
+        catchError(error => {
+          console.error('Error fetching my barber profile:', error);
+          return of(undefined);
+        })
+      );
+  }
+
   createBarber(barber: any): Observable<Barber> {
     const headers = this.authService.getAuthHeaders();
     return this.http.post<any>(`${this.apiUrl}/admin/barbers`, barber, { headers })

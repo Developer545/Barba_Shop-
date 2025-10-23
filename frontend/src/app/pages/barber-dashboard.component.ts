@@ -295,8 +295,8 @@ export class BarberDashboardComponent implements OnInit {
   loadBarberData(): void {
     if (!this.currentUser) return;
 
-    // Cargar perfil del barbero
-    this.dataService.getBarberById(this.currentUser.id).subscribe({
+    // Cargar perfil del barbero autenticado
+    this.dataService.getMyBarberProfile().subscribe({
       next: (barber) => {
         if (barber) {
           this.barberProfile = barber;
