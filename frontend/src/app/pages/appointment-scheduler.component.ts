@@ -92,7 +92,7 @@ interface TimeSlotUI {
                 </button>
                 <div class="text-center flex-1">
                   <p class="text-white font-bold text-lg">
-                    {{ getMonthName(currentMonth) | uppercase }} {{ currentMonth?.getFullYear() }}
+                    {{ getMonthName(currentMonth) }} {{ getYear(currentMonth) }}
                   </p>
                 </div>
                 <button type="button"
@@ -463,12 +463,38 @@ export class AppointmentSchedulerComponent implements OnInit, OnChanges {
     return `${day} de ${month} de ${year}`;
   }
 
-  getMonthName(date: Date | null | undefined): string {
-    if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+  getMonthName(date: Date | null | undefined, uppercase: boolean = true): string {
+    if (!date || !(date instanceof Date)) {
       return '';
     }
-    const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-    return months[date.getMonth()] || '';
+    try {
+      if (isNaN(date.getTime())) {
+        return '';
+      }
+    } catch {
+      return '';
+    }
+    const months = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+    const monthIndex = date.getMonth();
+    if (monthIndex < 0 || monthIndex >= 12) {
+      return '';
+    }
+    return months[monthIndex] || '';
+  }
+
+  getYear(date: Date | null | undefined): string {
+    if (!date || !(date instanceof Date)) {
+      return '';
+    }
+    try {
+      const year = date.getFullYear();
+      if (year < 1000 || year > 9999) {
+        return '';
+      }
+      return String(year);
+    } catch {
+      return '';
+    }
   }
 
   onSubmit(): void {

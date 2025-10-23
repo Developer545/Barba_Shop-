@@ -37,9 +37,9 @@ interface CalendarDay {
 
         <div class="text-center">
           <h3 class="text-2xl font-bold text-gray-900">
-            {{ getMonthName(currentDate) }}
+            {{ getMonthDisplayName(currentDate) }}
           </h3>
-          <p class="text-sm text-gray-600">{{ currentDate?.getFullYear() }}</p>
+          <p class="text-sm text-gray-600">{{ getDisplayYear(currentDate) }}</p>
         </div>
 
         <button (click)="nextMonth()"
@@ -265,5 +265,39 @@ export class AppointmentsCalendarComponent implements OnInit, OnChanges {
     }
     const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
     return months[date.getMonth()] || '';
+  }
+
+  getMonthDisplayName(date: Date | null | undefined): string {
+    if (!date || !(date instanceof Date)) {
+      return '';
+    }
+    try {
+      if (isNaN(date.getTime())) {
+        return '';
+      }
+    } catch {
+      return '';
+    }
+    const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    const monthIndex = date.getMonth();
+    if (monthIndex < 0 || monthIndex >= 12) {
+      return '';
+    }
+    return months[monthIndex] || '';
+  }
+
+  getDisplayYear(date: Date | null | undefined): string {
+    if (!date || !(date instanceof Date)) {
+      return '';
+    }
+    try {
+      const year = date.getFullYear();
+      if (year < 1000 || year > 9999) {
+        return '';
+      }
+      return String(year);
+    } catch {
+      return '';
+    }
   }
 }
