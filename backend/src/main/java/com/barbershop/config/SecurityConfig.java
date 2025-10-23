@@ -53,6 +53,8 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager() {
         // Use ProviderManager with our DaoAuthenticationProvider to ensure password validation
+        // This ensures that the password is actually validated against the stored BCrypt hash
+        // BUG FIX: This prevents accepting any password for authentication
         return new ProviderManager(authenticationProvider());
     }
 
