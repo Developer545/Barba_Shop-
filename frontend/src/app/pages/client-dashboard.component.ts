@@ -65,7 +65,7 @@ import { AppointmentsCalendarComponent } from './appointments-calendar.component
         <!-- Welcome Section - Responsive -->
         <div class="mb-6 sm:mb-10 bg-white/60 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-white/40">
           <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-1 sm:mb-2">
-            ¡Bienvenido, {{ (currentUser?.name || '')?.split(' ')[0] || 'Cliente' }}!
+            ¡Bienvenido, {{ getFirstName() }}!
           </h1>
           <p class="text-xs sm:text-sm lg:text-base text-gray-600 font-medium">Reserva tu próxima cita con nosotros</p>
         </div>
@@ -465,6 +465,14 @@ export class ClientDashboardComponent implements OnInit {
   setMinDate(): void {
     const today = new Date();
     this.minDate = today.toISOString().split('T')[0];
+  }
+
+  getFirstName(): string {
+    if (!this.currentUser || !this.currentUser.name) {
+      return 'Cliente';
+    }
+    const firstName = this.currentUser.name.split(' ')[0];
+    return firstName || 'Cliente';
   }
 
   getRoleLabel(role: any): string {
