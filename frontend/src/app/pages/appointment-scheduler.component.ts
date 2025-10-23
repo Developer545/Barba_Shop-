@@ -74,60 +74,62 @@ interface TimeSlot {
               <span class="text-red-500">*</span> Selecciona Fecha y Hora
             </label>
 
-            <!-- Calendar View -->
-            <div class="bg-white border-2 border-indigo-200 rounded-lg sm:rounded-xl p-3 sm:p-6 shadow-md overflow-x-auto">
+            <!-- Calendar View - Large & Prominent -->
+            <div class="bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50 border-3 border-indigo-300 rounded-xl p-4 sm:p-8 shadow-lg">
               <!-- Calendar Header -->
-              <div class="flex justify-between items-center mb-4 sm:mb-6 gap-2">
+              <div class="flex justify-between items-center mb-6 sm:mb-8 gap-2">
                 <button type="button"
                         (click)="previousWeek()"
-                        class="p-1.5 sm:p-2 hover:bg-indigo-100 rounded-lg transition-all duration-200 flex-shrink-0">
-                  <svg class="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="p-2 sm:p-3 hover:bg-indigo-200 rounded-lg transition-all duration-200 flex-shrink-0 hover:scale-110 transform">
+                  <svg class="w-6 h-6 sm:w-7 sm:h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                   </svg>
                 </button>
-                <div class="text-center min-w-0">
-                  <p class="font-bold text-base sm:text-lg text-gray-900">
-                    {{ currentWeekStart | date:'MMMM':'' : 'es' }} {{ currentWeekStart | date:'yyyy' }}
+                <div class="text-center min-w-0 flex-1">
+                  <p class="font-bold text-lg sm:text-2xl text-indigo-700 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                    📅 {{ currentWeekStart | date:'MMMM':'' : 'es' }} {{ currentWeekStart | date:'yyyy' }}
                   </p>
-                  <p class="text-xs sm:text-sm text-gray-600">
+                  <p class="text-xs sm:text-base text-indigo-600 font-semibold mt-1">
                     {{ currentWeekStart | date:'d' }} - {{ currentWeekEnd | date:'d MMMM':'' : 'es' }}
                   </p>
                 </div>
                 <button type="button"
                         (click)="nextWeek()"
-                        class="p-1.5 sm:p-2 hover:bg-indigo-100 rounded-lg transition-all duration-200 flex-shrink-0">
-                  <svg class="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="p-2 sm:p-3 hover:bg-indigo-200 rounded-lg transition-all duration-200 flex-shrink-0 hover:scale-110 transform">
+                  <svg class="w-6 h-6 sm:w-7 sm:h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                   </svg>
                 </button>
               </div>
 
               <!-- Days of Week -->
-              <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-4 sm:mb-6">
+              <div class="grid grid-cols-7 gap-2 sm:gap-3">
                 <div *ngFor="let daySlot of weekDays"
                      (click)="selectDate(daySlot.date)"
                      [class.opacity-50]="daySlot.isDisabled"
                      [class.cursor-not-allowed]="daySlot.isDisabled"
-                     [class.ring-2]="isSelectedDate(daySlot.date)"
+                     [class.ring-4]="isSelectedDate(daySlot.date)"
                      [class.ring-indigo-600]="isSelectedDate(daySlot.date)"
-                     [class.bg-indigo-50]="isSelectedDate(daySlot.date)"
+                     [class.bg-gradient-to-br]="isSelectedDate(daySlot.date)"
+                     [class.from-indigo-200]="isSelectedDate(daySlot.date)"
+                     [class.to-indigo-100]="isSelectedDate(daySlot.date)"
                      [class.cursor-pointer]="!daySlot.isDisabled"
-                     [class.hover:shadow-lg]="!daySlot.isDisabled"
-                     class="p-2 sm:p-4 border-2 transition-all duration-200 rounded-lg text-center"
-                     [class.border-indigo-300]="!daySlot.isDisabled"
-                     [class.border-gray-200]="daySlot.isDisabled"
+                     [class.hover:shadow-xl]="!daySlot.isDisabled"
+                     class="p-3 sm:p-5 border-3 transition-all duration-200 rounded-xl text-center transform hover:scale-105"
+                     [class.border-indigo-400]="!daySlot.isDisabled && isSelectedDate(daySlot.date)"
+                     [class.border-green-400]="daySlot.isAvailable && !daySlot.isDisabled && !isSelectedDate(daySlot.date)"
+                     [class.bg-green-50]="daySlot.isAvailable && !daySlot.isDisabled && !isSelectedDate(daySlot.date)"
+                     [class.border-red-400]="!daySlot.isAvailable && !daySlot.isDisabled"
                      [class.bg-red-50]="!daySlot.isAvailable && !daySlot.isDisabled"
-                     [class.border-red-300]="!daySlot.isAvailable && !daySlot.isDisabled">
-                  <p class="text-xs font-semibold text-gray-600 uppercase">{{ daySlot.day }}</p>
-                  <p class="text-lg sm:text-2xl font-bold text-gray-900 my-1">{{ daySlot.dayNumber }}</p>
+                     [class.border-gray-300]="daySlot.isDisabled"
+                     [class.bg-gray-100]="daySlot.isDisabled">
+                  <p class="text-xs sm:text-sm font-bold text-gray-600 uppercase">{{ daySlot.day }}</p>
+                  <p class="text-2xl sm:text-4xl font-bold text-gray-900 my-2">{{ daySlot.dayNumber }}</p>
                   <div *ngIf="!daySlot.isDisabled" class="flex items-center justify-center space-x-1">
-                    <span *ngIf="daySlot.isAvailable" class="text-xs text-green-600 font-semibold flex items-center">
-                      <svg class="w-3 h-3 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                      </svg>
-                      {{ daySlot.slots.length }}
+                    <span *ngIf="daySlot.isAvailable" class="text-xs sm:text-sm text-green-700 font-bold flex items-center bg-green-100 px-2 py-1 rounded-full">
+                      ✓ {{ daySlot.slots.length }}
                     </span>
-                    <span *ngIf="!daySlot.isAvailable" class="text-xs text-red-600 font-semibold">Lleno</span>
+                    <span *ngIf="!daySlot.isAvailable" class="text-xs sm:text-sm text-red-700 font-bold bg-red-100 px-2 py-1 rounded-full">🔴 Lleno</span>
                   </div>
                 </div>
               </div>
