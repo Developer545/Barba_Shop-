@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM node:18 AS builder
+FROM node:20 AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
@@ -7,7 +7,7 @@ COPY . .
 RUN npx ng build
 
 # Stage 2: Runtime
-FROM node:18-alpine
+FROM node:20-alpine
 WORKDIR /app
 RUN npm install -g http-server
 COPY --from=builder /app/dist/barbershop-frontend ./dist/barbershop-frontend
