@@ -86,22 +86,10 @@ export class AuthService {
           throw new Error('Respuesta inválida del servidor');
         }),
         catchError(error => {
-          console.error('Error de login, usando datos demo:', error);
-          // Fallback a usuarios demo cuando el backend no está disponible
-          const demoUser = this.demoUsers.find(user =>
-            user.email === loginData.email
-          );
-
-          if (demoUser) {
-            // Simular token
-            const token = 'demo-token-' + Date.now();
-            localStorage.setItem('token', token);
-            localStorage.setItem('currentUser', JSON.stringify(demoUser));
-            this.currentUserSubject.next(demoUser);
-            return of(demoUser);
-          }
-
-          return throwError(() => new Error('Credenciales inválidas'));
+          console.error('Error de login:', error);
+          // Rechazar login si las credenciales son inválidas
+          // No usar fallback a usuarios demo - siempre rechazar
+          return throwError(() => new Error('Credenciales inválidas. Por favor, verifica tu correo y contraseña.'));
         })
       );
   }
