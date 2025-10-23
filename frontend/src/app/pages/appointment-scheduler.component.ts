@@ -1,22 +1,24 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DataService } from '../services/data.service';
 import { Service } from '../models/service.model';
 import { Barber } from '../models/barber.model';
 
-interface DaySlot {
-  date: Date;
-  day: string;
+interface CalendarDay {
+  dateString: string; // YYYY-MM-DD format
+  dateObj: Date;
   dayNumber: number;
-  isAvailable: boolean;
-  slots: TimeSlot[];
+  dayName: string;
   isDisabled: boolean;
+  isToday: boolean;
+  isSelected: boolean;
 }
 
-interface TimeSlot {
-  time: string;
+interface TimeSlotUI {
+  time: string; // HH:mm format
   isAvailable: boolean;
+  isSelected: boolean;
 }
 
 @Component({
@@ -24,182 +26,207 @@ interface TimeSlot {
   standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
   template: `
-    <div class="w-full">
+    <div class="w-full bg-gradient-to-br from-indigo-50 via-white to-blue-50 rounded-2xl p-4 sm:p-6 shadow-lg">
       <form [formGroup]="appointmentForm" (ngSubmit)="onSubmit()">
-        <div class="space-y-4 sm:space-y-6">
-          <!-- Service Selection -->
+        <div class="space-y-6 sm:space-y-8">
+          <!-- Step 1: Service Selection -->
           <div>
-            <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
-              <span class="text-red-500">*</span> Servicio
-            </label>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-sm">1</div>
+              <label class="block text-sm font-bold text-gray-900">Selecciona Servicio</label>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div *ngFor="let service of services"
                    (click)="appointmentForm.patchValue({ serviceId: service.id })"
                    [class.ring-2]="appointmentForm.get('serviceId')?.value === service.id"
                    [class.ring-indigo-600]="appointmentForm.get('serviceId')?.value === service.id"
                    [class.bg-indigo-50]="appointmentForm.get('serviceId')?.value === service.id"
-                   class="p-3 sm:p-4 border-2 border-indigo-200 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 hover:border-indigo-400 hover:shadow-md">
-                <p class="font-semibold text-gray-900 text-sm sm:text-base">{{ service.name }}</p>
-                <p class="text-xs sm:text-sm text-gray-600 mt-1">\${{ service.price }} • {{ service.duration }} min</p>
+                   class="p-4 border-2 border-gray-200 rounded-xl cursor-pointer transition-all duration-200 hover:border-indigo-400 hover:shadow-md">
+                <p class="font-semibold text-gray-900 text-sm">{{ service.name }}</p>
+                <p class="text-xs text-gray-600 mt-2">\${{ service.price }} • {{ service.duration }} min</p>
               </div>
             </div>
           </div>
 
-          <!-- Barber Selection -->
+          <!-- Step 2: Barber Selection -->
           <div>
-            <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
-              <span class="text-red-500">*</span> Barbero
-            </label>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-sm">2</div>
+              <label class="block text-sm font-bold text-gray-900">Selecciona Barbero</label>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div *ngFor="let barber of barbers"
                    (click)="onBarberSelect(barber)"
                    [class.ring-2]="appointmentForm.get('barberId')?.value === barber.userId"
                    [class.ring-purple-600]="appointmentForm.get('barberId')?.value === barber.userId"
                    [class.bg-purple-50]="appointmentForm.get('barberId')?.value === barber.userId"
-                   class="p-3 sm:p-4 border-2 border-purple-200 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 hover:border-purple-400 hover:shadow-md">
-                <div class="flex items-center space-x-2 sm:space-x-3">
-                  <img [src]="barber.avatar" [alt]="barber.name" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-white shadow-md flex-shrink-0">
+                   class="p-4 border-2 border-gray-200 rounded-xl cursor-pointer transition-all duration-200 hover:border-purple-400 hover:shadow-md">
+                <div class="flex items-center gap-3">
+                  <img [src]="barber.avatar" [alt]="barber.name" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md flex-shrink-0">
                   <div class="min-w-0 flex-1">
-                    <p class="font-semibold text-gray-900 text-sm sm:text-base truncate">{{ barber.name }}</p>
-                    <p class="text-xs sm:text-sm text-yellow-500 font-semibold">★ {{ barber.rating }}/5</p>
+                    <p class="font-semibold text-gray-900 text-sm">{{ barber.name }}</p>
+                    <p class="text-xs text-yellow-500 font-semibold">★ {{ barber.rating }}/5</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Calendar & Time Selection -->
+          <!-- Step 3: Date & Time Selection -->
           <div *ngIf="appointmentForm.get('barberId')?.value">
-            <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-3 sm:mb-4">
-              <span class="text-red-500">*</span> 📅 Selecciona Fecha y Hora
-            </label>
+            <div class="flex items-center gap-2 mb-4">
+              <div class="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-600 text-white font-bold text-sm">3</div>
+              <label class="block text-sm font-bold text-gray-900">Selecciona Fecha y Hora</label>
+            </div>
 
-            <!-- Google Calendar Style -->
-            <div class="bg-white border-2 border-indigo-200 rounded-xl shadow-lg overflow-hidden">
+            <!-- Google Calendar Style Month View -->
+            <div class="bg-white border-2 border-indigo-200 rounded-xl shadow-lg overflow-hidden mb-6">
               <!-- Calendar Header -->
-              <div class="bg-gradient-to-r from-indigo-600 to-blue-600 px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
+              <div class="bg-gradient-to-r from-indigo-600 to-blue-600 px-4 sm:px-6 py-4 flex justify-between items-center">
                 <button type="button"
                         (click)="previousMonth()"
-                        class="p-2 hover:bg-indigo-500 rounded-lg transition-all duration-200 hover:scale-110">
-                  <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="p-2 hover:bg-indigo-500 rounded-lg transition-all hover:scale-110">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                   </svg>
                 </button>
                 <div class="text-center flex-1">
-                  <p class="text-white font-bold text-lg sm:text-xl">
+                  <p class="text-white font-bold text-lg">
                     {{ currentMonth | date:'MMMM':'' : 'es' | uppercase }} {{ currentMonth | date:'yyyy' }}
                   </p>
                 </div>
                 <button type="button"
                         (click)="nextMonth()"
-                        class="p-2 hover:bg-indigo-500 rounded-lg transition-all duration-200 hover:scale-110">
-                  <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="p-2 hover:bg-indigo-500 rounded-lg transition-all hover:scale-110">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                   </svg>
                 </button>
               </div>
 
               <!-- Calendar Grid -->
-              <div class="p-3 sm:p-4">
+              <div class="p-4">
                 <!-- Week Day Headers -->
-                <div class="grid grid-cols-7 gap-2 mb-3 sm:mb-4">
-                  <div *ngFor="let weekDay of weekDayHeaders" class="text-center font-bold text-gray-600 text-xs sm:text-sm py-2">
+                <div class="grid grid-cols-7 gap-2 mb-3">
+                  <div *ngFor="let weekDay of weekDayHeaders" class="text-center font-bold text-gray-600 text-xs py-2">
                     {{ weekDay }}
                   </div>
                 </div>
 
                 <!-- Days Grid -->
                 <div class="grid grid-cols-7 gap-2">
-                  <button *ngFor="let day of monthDays"
+                  <button *ngFor="let day of calendarDays"
                           type="button"
-                          (click)="selectDate(day.date)"
+                          (click)="selectDate(day.dateString)"
                           [disabled]="day.isDisabled"
                           [class.opacity-30]="day.isDisabled"
                           [class.cursor-not-allowed]="day.isDisabled"
-                          [class.ring-4]="isSelectedDate(day.date)"
-                          [class.ring-indigo-600]="isSelectedDate(day.date)"
-                          [class.bg-gradient-to-br]="isSelectedDate(day.date)"
-                          [class.from-indigo-500]="isSelectedDate(day.date)"
-                          [class.to-blue-500]="isSelectedDate(day.date)"
-                          [class.text-white]="isSelectedDate(day.date)"
-                          [class.shadow-lg]="isSelectedDate(day.date)"
-                          [class.bg-green-50]="!day.isDisabled && day.isAvailable && !isSelectedDate(day.date)"
-                          [class.border-2]="!day.isDisabled && day.isAvailable && !isSelectedDate(day.date)"
-                          [class.border-green-400]="!day.isDisabled && day.isAvailable && !isSelectedDate(day.date)"
-                          [class.hover:bg-green-100]="!day.isDisabled && day.isAvailable && !isSelectedDate(day.date)"
-                          [class.hover:shadow-md]="!day.isDisabled && !isSelectedDate(day.date)"
+                          [class.ring-4]="day.isSelected"
+                          [class.ring-indigo-600]="day.isSelected"
+                          [class.bg-gradient-to-br]="day.isSelected"
+                          [class.from-indigo-500]="day.isSelected"
+                          [class.to-blue-500]="day.isSelected"
+                          [class.text-white]="day.isSelected"
+                          [class.shadow-lg]="day.isSelected"
+                          [class.bg-green-50]="!day.isDisabled && day.isSelected === false"
+                          [class.border-2]="!day.isDisabled && day.isSelected === false"
+                          [class.border-green-400]="!day.isDisabled && day.isSelected === false"
+                          [class.hover:bg-green-100]="!day.isDisabled && day.isSelected === false"
                           [class.bg-gray-50]="day.isDisabled"
-                          class="aspect-square p-1 sm:p-2 border rounded-lg transition-all duration-200 flex flex-col items-center justify-center text-center hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed">
-                    <span class="text-xs sm:text-sm font-semibold text-gray-700" [class.text-white]="isSelectedDate(day.date)">{{ day.dayNumber }}</span>
+                          class="aspect-square p-2 border rounded-lg transition-all hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed flex items-center justify-center">
+                    <span class="text-sm font-semibold" [class.text-white]="day.isSelected">{{ day.dayNumber }}</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            <!-- Time Slots for Selected Date -->
-            <div *ngIf="selectedDate" class="mt-6">
-              <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
-                Horarios para {{ selectedDate | date:'d MMMM':'' : 'es' }}
-              </label>
+            <!-- Time Slots Selection -->
+            <div *ngIf="selectedDateString" class="bg-white border-2 border-green-200 rounded-xl p-4 sm:p-6 shadow-lg">
+              <div class="flex items-center gap-2 mb-4">
+                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <p class="text-sm font-semibold text-gray-900">
+                  Horarios disponibles para {{ selectedDateString | date:'d MMMM':'' : 'es' }}
+                </p>
+              </div>
 
               <!-- Loading State -->
-              <div *ngIf="isLoadingSlots" class="flex items-center justify-center py-6 sm:py-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg sm:rounded-xl border-2 border-blue-200">
-                <svg class="animate-spin h-5 w-5 sm:h-6 sm:w-6 text-indigo-600 mr-2 sm:mr-3" fill="none" viewBox="0 0 24 24">
+              <div *ngIf="isLoadingSlots" class="flex items-center justify-center py-8 gap-3">
+                <svg class="animate-spin h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span class="text-indigo-600 font-medium text-xs sm:text-base">Cargando horarios...</span>
+                <span class="text-indigo-600 font-medium">Cargando horarios...</span>
               </div>
 
               <!-- Time Slots Grid -->
-              <div *ngIf="!isLoadingSlots && availableTimeSlots.length > 0" class="grid grid-cols-3 sm:grid-cols-4 gap-1.5 sm:gap-2">
-                <button *ngFor="let slot of availableTimeSlots"
+              <div *ngIf="!isLoadingSlots && timeSlots.length > 0" class="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                <button *ngFor="let slot of timeSlots"
                         type="button"
-                        (click)="appointmentForm.patchValue({ time: slot })"
-                        [class.ring-2]="appointmentForm.get('time')?.value === slot"
-                        [class.ring-green-600]="appointmentForm.get('time')?.value === slot"
-                        [class.bg-gradient-to-br]="appointmentForm.get('time')?.value === slot"
-                        [class.from-green-400]="appointmentForm.get('time')?.value === slot"
-                        [class.to-emerald-500]="appointmentForm.get('time')?.value === slot"
-                        [class.text-white]="appointmentForm.get('time')?.value === slot"
-                        [class.shadow-lg]="appointmentForm.get('time')?.value === slot"
-                        [class.bg-white]="appointmentForm.get('time')?.value !== slot"
-                        [class.text-indigo-600]="appointmentForm.get('time')?.value !== slot"
-                        [class.border-2]="appointmentForm.get('time')?.value !== slot"
-                        [class.border-indigo-200]="appointmentForm.get('time')?.value !== slot"
-                        [class.hover:border-indigo-400]="appointmentForm.get('time')?.value !== slot"
-                        [class.shadow-md]="appointmentForm.get('time')?.value !== slot"
-                        class="py-2 sm:py-3 px-1.5 sm:px-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                  {{ slot }}
+                        (click)="selectTime(slot.time)"
+                        [disabled]="!slot.isAvailable"
+                        [class.ring-2]="slot.isSelected"
+                        [class.ring-green-600]="slot.isSelected"
+                        [class.bg-gradient-to-br]="slot.isSelected"
+                        [class.from-green-400]="slot.isSelected"
+                        [class.to-emerald-500]="slot.isSelected"
+                        [class.text-white]="slot.isSelected"
+                        [class.shadow-lg]="slot.isSelected"
+                        [class.bg-white]="!slot.isSelected && slot.isAvailable"
+                        [class.border-2]="!slot.isSelected && slot.isAvailable"
+                        [class.border-green-400]="!slot.isSelected && slot.isAvailable"
+                        [class.text-green-700]="!slot.isSelected && slot.isAvailable"
+                        [class.hover:bg-green-50]="!slot.isSelected && slot.isAvailable"
+                        [class.bg-red-50]="!slot.isAvailable"
+                        [class.border-2]="!slot.isAvailable"
+                        [class.border-red-300]="!slot.isAvailable"
+                        [class.text-red-500]="!slot.isAvailable"
+                        [class.opacity-50]="!slot.isAvailable"
+                        [class.cursor-not-allowed]="!slot.isAvailable"
+                        class="py-3 px-2 rounded-lg font-semibold text-sm transition-all hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed">
+                  {{ slot.time }}
+                  <br>
+                  <span class="text-xs" [class.text-white]="slot.isSelected">{{ slot.isAvailable ? '✓' : '✗' }}</span>
                 </button>
               </div>
 
               <!-- No Slots Available -->
-              <div *ngIf="!isLoadingSlots && availableTimeSlots.length === 0" class="bg-gradient-to-r from-red-50 to-pink-50 rounded-lg sm:rounded-xl p-3 sm:p-4 border-2 border-red-200">
-                <p class="text-red-600 font-medium text-center text-xs sm:text-sm">No hay horarios disponibles para esta fecha</p>
+              <div *ngIf="!isLoadingSlots && timeSlots.length === 0" class="bg-red-50 rounded-lg p-4 border-2 border-red-200 text-center">
+                <p class="text-red-600 font-medium">No hay horarios disponibles para esta fecha</p>
               </div>
             </div>
           </div>
 
           <!-- Notes -->
           <div>
-            <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">Notas adicionales (opcional)</label>
+            <label class="block text-sm font-semibold text-gray-900 mb-2">Notas adicionales (opcional)</label>
             <textarea formControlName="notes" rows="3"
-                      class="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-indigo-200 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white hover:border-indigo-300 transition-all duration-200 shadow-sm font-medium resize-none text-xs sm:text-sm"></textarea>
+                      placeholder="Agrega cualquier nota especial para tu cita..."
+                      class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white hover:border-indigo-300 transition-all shadow-sm resize-none text-sm"></textarea>
+          </div>
+
+          <!-- Summary -->
+          <div *ngIf="appointmentForm.get('serviceId')?.value && appointmentForm.get('barberId')?.value && selectedDateString && appointmentForm.get('time')?.value"
+               class="bg-indigo-50 border-2 border-indigo-200 rounded-xl p-4 space-y-2">
+            <p class="text-sm text-gray-700"><span class="font-semibold">Servicio:</span> {{ getServiceName() }}</p>
+            <p class="text-sm text-gray-700"><span class="font-semibold">Barbero:</span> {{ getBarberName() }}</p>
+            <p class="text-sm text-gray-700"><span class="font-semibold">Fecha:</span> {{ selectedDateString | date:'d MMMM yyyy':'' : 'es' }}</p>
+            <p class="text-sm text-gray-700"><span class="font-semibold">Hora:</span> {{ appointmentForm.get('time')?.value }}</p>
           </div>
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
+        <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
           <button type="button"
                   (click)="cancel.emit()"
-                  class="px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-gray-100 to-slate-100 hover:from-gray-200 hover:to-slate-200 text-gray-700 font-semibold rounded-lg sm:rounded-xl transition-all duration-200 shadow-md text-sm sm:text-base">
+                  class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-all shadow-md">
             Cancelar
           </button>
           <button type="submit"
                   [disabled]="!appointmentForm.valid || isLoadingSlots"
-                  class="px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold rounded-lg sm:rounded-xl transition-all duration-200 shadow-md hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base">
-            Confirmar Cita
+                  class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold rounded-lg transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+            ✓ Confirmar Cita
           </button>
         </div>
       </form>
@@ -211,17 +238,17 @@ interface TimeSlot {
     }
   `]
 })
-export class AppointmentSchedulerComponent implements OnInit {
+export class AppointmentSchedulerComponent implements OnInit, OnChanges {
   @Input() services: Service[] = [];
   @Input() barbers: Barber[] = [];
   @Output() cancel = new EventEmitter<void>();
   @Output() submit = new EventEmitter<any>();
 
   appointmentForm: FormGroup;
-  monthDays: DaySlot[] = [];
   currentMonth: Date = new Date();
-  selectedDate: Date | null = null;
-  availableTimeSlots: string[] = [];
+  calendarDays: CalendarDay[] = [];
+  selectedDateString: string | null = null;
+  timeSlots: TimeSlotUI[] = [];
   isLoadingSlots: boolean = false;
   weekDayHeaders = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
 
@@ -239,20 +266,20 @@ export class AppointmentSchedulerComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.initializeCalendar();
+    this.generateCalendarDays();
   }
 
-  initializeCalendar(): void {
-    this.currentMonth = new Date();
-    this.loadMonthDays();
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['services'] || changes['barbers']) {
+      this.generateCalendarDays();
+    }
   }
 
-  loadMonthDays(): void {
-    this.monthDays = [];
+  generateCalendarDays(): void {
+    this.calendarDays = [];
     const year = this.currentMonth.getFullYear();
     const month = this.currentMonth.getMonth();
 
-    // First day of the month and last day
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
@@ -261,18 +288,19 @@ export class AppointmentSchedulerComponent implements OnInit {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Add previous month's days (gray out)
+    // Add previous month's days
     const prevMonthLastDay = new Date(year, month, 0).getDate();
     for (let i = startingDayOfWeek - 1; i >= 0; i--) {
       const day = prevMonthLastDay - i;
       const date = new Date(year, month - 1, day);
-      this.monthDays.push({
-        date: new Date(date),
-        day: this.weekDayHeaders[date.getDay()],
+      this.calendarDays.push({
+        dateString: this.formatDateToString(date),
+        dateObj: new Date(date),
         dayNumber: day,
-        isAvailable: true,
-        slots: [],
-        isDisabled: true
+        dayName: this.weekDayHeaders[date.getDay()],
+        isDisabled: true,
+        isToday: false,
+        isSelected: false
       });
     }
 
@@ -280,111 +308,147 @@ export class AppointmentSchedulerComponent implements OnInit {
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
       const isDisabled = date < today;
+      const dateStr = this.formatDateToString(date);
 
-      this.monthDays.push({
-        date: new Date(date),
-        day: this.weekDayHeaders[date.getDay()],
+      this.calendarDays.push({
+        dateString: dateStr,
+        dateObj: new Date(date),
         dayNumber: day,
-        isAvailable: !isDisabled,
-        slots: [],
-        isDisabled: isDisabled
+        dayName: this.weekDayHeaders[date.getDay()],
+        isDisabled: isDisabled,
+        isToday: dateStr === this.formatDateToString(today),
+        isSelected: dateStr === this.selectedDateString
       });
     }
 
-    // Add next month's days (gray out)
-    const remainingDays = 42 - this.monthDays.length;
+    // Add next month's days
+    const remainingDays = 42 - this.calendarDays.length;
     for (let day = 1; day <= remainingDays; day++) {
       const date = new Date(year, month + 1, day);
-      this.monthDays.push({
-        date: new Date(date),
-        day: this.weekDayHeaders[date.getDay()],
+      this.calendarDays.push({
+        dateString: this.formatDateToString(date),
+        dateObj: new Date(date),
         dayNumber: day,
-        isAvailable: true,
-        slots: [],
-        isDisabled: true
+        dayName: this.weekDayHeaders[date.getDay()],
+        isDisabled: true,
+        isToday: false,
+        isSelected: false
       });
     }
+
+    // Update selected states
+    this.calendarDays = this.calendarDays.map(day => ({
+      ...day,
+      isSelected: day.dateString === this.selectedDateString
+    }));
+  }
+
+  selectDate(dateString: string): void {
+    this.selectedDateString = dateString;
+    this.appointmentForm.patchValue({ date: dateString });
+    this.timeSlots = [];
+    this.generateCalendarDays();
+    this.loadTimeSlots();
   }
 
   onBarberSelect(barber: Barber): void {
     this.appointmentForm.patchValue({ barberId: barber.userId });
-    this.selectedDate = null;
-    this.availableTimeSlots = [];
+    this.selectedDateString = null;
+    this.timeSlots = [];
+    this.generateCalendarDays();
   }
 
-  selectDate(date: Date): void {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    if (date < today) {
-      return;
-    }
-
-    this.selectedDate = new Date(date);
-    this.appointmentForm.patchValue({ date: this.formatDate(date) });
-    this.loadTimeSlots();
+  selectTime(time: string): void {
+    this.appointmentForm.patchValue({ time: time });
+    this.timeSlots = this.timeSlots.map(slot => ({
+      ...slot,
+      isSelected: slot.time === time
+    }));
   }
 
   loadTimeSlots(): void {
-    if (!this.selectedDate || !this.appointmentForm.get('barberId')?.value) {
+    if (!this.selectedDateString || !this.appointmentForm.get('barberId')?.value) {
       return;
     }
 
     this.isLoadingSlots = true;
     const barberId = this.appointmentForm.get('barberId')?.value;
-    const dateStr = this.formatDate(this.selectedDate);
 
-    this.dataService.getAvailableTimeSlots(barberId, dateStr).subscribe({
-      next: (slots) => {
-        this.availableTimeSlots = slots;
+    this.dataService.getAvailableTimeSlots(barberId, this.selectedDateString).subscribe({
+      next: (availableSlots) => {
+        // Generate 15-minute slots for the entire day
+        this.timeSlots = this.generateTimeSlots(availableSlots);
         this.isLoadingSlots = false;
       },
       error: (error) => {
         console.error('Error loading time slots:', error);
-        this.availableTimeSlots = [];
+        this.timeSlots = [];
         this.isLoadingSlots = false;
       }
     });
   }
 
+  generateTimeSlots(availableSlots: string[]): TimeSlotUI[] {
+    // Generate slots from 8 AM to 6 PM, every 15 minutes
+    const slots: TimeSlotUI[] = [];
+    const startHour = 8;
+    const endHour = 18;
+
+    for (let hour = startHour; hour < endHour; hour++) {
+      for (let minute = 0; minute < 60; minute += 15) {
+        const time = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+        const isAvailable = availableSlots.includes(time);
+        slots.push({
+          time,
+          isAvailable,
+          isSelected: time === this.appointmentForm.get('time')?.value
+        });
+      }
+    }
+
+    return slots;
+  }
+
   previousMonth(): void {
     this.currentMonth.setMonth(this.currentMonth.getMonth() - 1);
-    this.loadMonthDays();
+    this.currentMonth = new Date(this.currentMonth);
+    this.generateCalendarDays();
   }
 
   nextMonth(): void {
     this.currentMonth.setMonth(this.currentMonth.getMonth() + 1);
-    this.loadMonthDays();
+    this.currentMonth = new Date(this.currentMonth);
+    this.generateCalendarDays();
   }
 
-  isSelectedDate(date: Date): boolean {
-    if (!this.selectedDate) return false;
-    return (
-      date.getDate() === this.selectedDate.getDate() &&
-      date.getMonth() === this.selectedDate.getMonth() &&
-      date.getFullYear() === this.selectedDate.getFullYear()
-    );
-  }
-
-  formatDate(date: Date): string {
+  formatDateToString(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
 
+  getServiceName(): string {
+    const serviceId = this.appointmentForm.get('serviceId')?.value;
+    return this.services.find(s => s.id === serviceId)?.name || '';
+  }
+
+  getBarberName(): string {
+    const barberId = this.appointmentForm.get('barberId')?.value;
+    return this.barbers.find(b => b.userId === barberId)?.name || '';
+  }
+
   onSubmit(): void {
     if (this.appointmentForm.valid) {
-      // Create a plain object with only primitive values to avoid NG02100 error
       const formValue = this.appointmentForm.value;
-      const appointmentPayload = {
+      const payload = {
         serviceId: Number(formValue.serviceId),
         barberId: Number(formValue.barberId),
         date: String(formValue.date),
         time: String(formValue.time),
         notes: String(formValue.notes || '')
       };
-      this.submit.emit(appointmentPayload);
+      this.submit.emit(payload);
     }
   }
 }
