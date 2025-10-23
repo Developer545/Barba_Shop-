@@ -1388,11 +1388,18 @@ import Swal from 'sweetalert2';
             </div>
 
             <div class="flex justify-end space-x-3 mt-6">
-              <button type="button" (click)="closeBarberModalModified()" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+              <button type="button" (click)="closeBarberModalModified()" [disabled]="isCreatingBarber" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
                 Cancelar
               </button>
-              <button type="submit" [disabled]="barberForm.invalid" class="btn-primary" [class.opacity-50]="barberForm.invalid">
-                {{ editingBarber ? 'Actualizar Barbero' : 'Crear Barbero' }}
+              <button type="submit" [disabled]="barberForm.invalid || isCreatingBarber" class="btn-primary" [class.opacity-50]="barberForm.invalid || isCreatingBarber">
+                <span *ngIf="!isCreatingBarber">{{ editingBarber ? 'Actualizar Barbero' : 'Crear Barbero' }}</span>
+                <span *ngIf="isCreatingBarber" class="flex items-center justify-center">
+                  <svg class="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Creando...
+                </span>
               </button>
             </div>
           </form>
@@ -1468,8 +1475,15 @@ import Swal from 'sweetalert2';
               <button type="button" (click)="closeServiceModalModified()" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
                 Cancelar
               </button>
-              <button type="submit" [disabled]="serviceForm.invalid" class="btn-primary" [class.opacity-50]="serviceForm.invalid">
-                {{ editingService ? 'Actualizar Servicio' : 'Crear Servicio' }}
+              <button type="submit" [disabled]="serviceForm.invalid || isCreatingService" class="btn-primary" [class.opacity-50]="serviceForm.invalid || isCreatingService">
+                <span *ngIf="!isCreatingService">{{ editingService ? 'Actualizar Servicio' : 'Crear Servicio' }}</span>
+                <span *ngIf="isCreatingService" class="flex items-center justify-center">
+                  <svg class="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Creando...
+                </span>
               </button>
             </div>
           </form>
@@ -1839,11 +1853,18 @@ import Swal from 'sweetalert2';
             </div>
 
             <div class="flex justify-end space-x-3 mt-6">
-              <button type="button" (click)="closeUserModal()" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
+              <button type="button" (click)="closeUserModal()" [disabled]="isCreatingUser" class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
                 Cancelar
               </button>
-              <button type="submit" [disabled]="userForm.invalid" class="btn-primary" [class.opacity-50]="userForm.invalid">
-                {{ editingUser ? 'Actualizar' : 'Crear' }} Usuario
+              <button type="submit" [disabled]="userForm.invalid || isCreatingUser" class="btn-primary" [class.opacity-50]="userForm.invalid || isCreatingUser">
+                <span *ngIf="!isCreatingUser">{{ editingUser ? 'Actualizar' : 'Crear' }} Usuario</span>
+                <span *ngIf="isCreatingUser" class="flex items-center justify-center">
+                  <svg class="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Creando...
+                </span>
               </button>
             </div>
           </form>
@@ -2059,6 +2080,11 @@ export class DashboardComponent implements OnInit {
   selectedBarberDetails: Barber | null = null;
   availableTimeSlots: string[] = [];
   minDate: string = new Date().toISOString().split('T')[0];
+
+  // Loading states para bloquear botones durante creación
+  isCreatingBarber = false;
+  isCreatingService = false;
+  isCreatingUser = false;
 
   // Forms
   barberForm: FormGroup;
@@ -2330,13 +2356,16 @@ export class DashboardComponent implements OnInit {
         });
       } else {
         // Create new user
+        this.isCreatingUser = true;
         this.dataService.createUser(userData).subscribe({
           next: (newUser) => {
+            this.isCreatingUser = false;
             alert('Usuario creado exitosamente!');
             this.closeUserModal();
             this.loadUsers();
           },
           error: (error) => {
+            this.isCreatingUser = false;
             console.error('Error creating user:', error);
             alert('Error al crear usuario: ' + (error.error?.message || 'Error desconocido'));
           }
@@ -2580,13 +2609,16 @@ export class DashboardComponent implements OnInit {
         });
       } else {
         // Crear nuevo barbero
+        this.isCreatingBarber = true;
         this.dataService.createBarber(barberData).subscribe({
           next: (newBarber) => {
+            this.isCreatingBarber = false;
             alert('Barbero creado exitosamente!');
             this.closeBarberModal();
             this.loadData();
           },
           error: (error) => {
+            this.isCreatingBarber = false;
             console.error('Error creating barber:', error);
             alert('Error al crear barbero: ' + (error.error?.message || 'Error desconocido'));
           }
@@ -2621,13 +2653,16 @@ export class DashboardComponent implements OnInit {
         });
       } else {
         // Crear nuevo servicio
+        this.isCreatingService = true;
         this.dataService.createService(serviceData).subscribe({
           next: (newService) => {
+            this.isCreatingService = false;
             alert('Servicio creado exitosamente!');
             this.closeServiceModal();
             this.loadData();
           },
           error: (error) => {
+            this.isCreatingService = false;
             console.error('Error creating service:', error);
             alert('Error al crear servicio: ' + (error.error?.message || 'Error desconocido'));
           }

@@ -137,57 +137,6 @@ import { LoginData, User, UserRole } from '../models/user.model';
             Crear cuenta nueva
           </button>
         </div>
-
-        <!-- Real users credentials -->
-        <div class="mt-6 p-5 bg-white/15 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/30">
-          <!-- Header con botón toggle -->
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-sm font-semibold text-white drop-shadow">Usuarios Disponibles en Base de Datos:</h3>
-            <button
-              type="button"
-              (click)="toggleDemoUsers()"
-              class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-white/20 hover:bg-white/30 text-white border border-white/30 hover:border-white/50 transition-all duration-200 transform hover:scale-105 flex items-center space-x-1"
-            >
-              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path *ngIf="!showDemoUsers" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                <path *ngIf="!showDemoUsers" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                <path *ngIf="showDemoUsers" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/>
-              </svg>
-              <span>{{ showDemoUsers ? 'Ocultar' : 'Mostrar' }}</span>
-            </button>
-          </div>
-
-          <!-- Lista de usuarios (se muestra/oculta) -->
-          <div *ngIf="showDemoUsers" class="space-y-2">
-            <div *ngFor="let user of demoUsers"
-                 class="flex items-center justify-between p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 hover:bg-white/20 hover:border-white/40 cursor-pointer transition-all duration-200 transform hover:scale-[1.02]"
-                 (click)="selectDemoUser(user)">
-              <div class="flex items-center space-x-3">
-                <img [src]="user.avatar" [alt]="user.name" class="w-10 h-10 rounded-full border-2 border-white/30">
-                <div>
-                  <p class="text-sm font-semibold text-white drop-shadow">{{ user.name }}</p>
-                  <p class="text-xs text-white/80">{{ user.email }}</p>
-                </div>
-              </div>
-              <div class="flex items-center space-x-2">
-                <span class="px-3 py-1 text-xs font-semibold rounded-full backdrop-blur-sm"
-                      [ngClass]="{
-                        'bg-red-400/30 text-red-100 border border-red-300/50': user.role === 'admin',
-                        'bg-blue-400/30 text-blue-100 border border-blue-300/50': user.role === 'barber',
-                        'bg-green-400/30 text-green-100 border border-green-300/50': user.role === 'client'
-                      }">
-                  {{ getRoleLabel(user.role) }}
-                </span>
-              </div>
-            </div>
-            <p class="text-xs text-white/90 mt-4 font-medium drop-shadow text-center">✨ Haz clic en cualquier usuario para usar sus credenciales</p>
-          </div>
-
-          <!-- Mensaje cuando está oculto -->
-          <div *ngIf="!showDemoUsers" class="text-center py-4">
-            <p class="text-sm text-white/70">Usuarios ocultos. Haz clic en "Mostrar" para verlos.</p>
-          </div>
-        </div>
       </div>
     </div>
   `,
@@ -198,8 +147,6 @@ export class LoginComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
   showPassword = false;
-  showDemoUsers = false;
-  demoUsers: User[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -207,100 +154,13 @@ export class LoginComponent implements OnInit {
     private router: Router
   ) {
     this.loginForm = this.fb.group({
-      email: ['admin@barbershop.com', [Validators.required, Validators.email]],
-      password: ['password123', [Validators.required, Validators.minLength(6)]]
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
   ngOnInit(): void {
-    // Usuarios reales de la base de datos
-    this.demoUsers = [
-      {
-        id: 1,
-        name: 'Admin User',
-        email: 'admin@barbershop.com',
-        phone: '+503 7000-0001',
-        role: UserRole.ADMIN,
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=AdminUser',
-        createdAt: new Date()
-      },
-      {
-        id: 2,
-        name: 'Miguel García',
-        email: 'miguel@barbershop.com',
-        phone: '+503 7000-0002',
-        role: UserRole.BARBER,
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=MiguelGarcia',
-        createdAt: new Date()
-      },
-      {
-        id: 3,
-        name: 'Carlos López',
-        email: 'carlos@barbershop.com',
-        phone: '+503 7000-0003',
-        role: UserRole.BARBER,
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=CarlosLopez',
-        createdAt: new Date()
-      },
-      {
-        id: 4,
-        name: 'Roberto Martínez',
-        email: 'roberto@barbershop.com',
-        phone: '+503 7000-0004',
-        role: UserRole.BARBER,
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=RobertoMartinez',
-        createdAt: new Date()
-      },
-      {
-        id: 5,
-        name: 'Juan Pérez',
-        email: 'juan@email.com',
-        phone: '+503 7000-0005',
-        role: UserRole.CLIENT,
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=JuanPerez',
-        createdAt: new Date()
-      },
-      {
-        id: 6,
-        name: 'Ana Rodríguez',
-        email: 'ana@email.com',
-        phone: '+503 7000-0006',
-        role: UserRole.CLIENT,
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=AnaRodriguez',
-        createdAt: new Date()
-      },
-      {
-        id: 7,
-        name: 'Pedro Hernández',
-        email: 'pedro@email.com',
-        phone: '+503 7000-0007',
-        role: UserRole.CLIENT,
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=PedroHernandez',
-        createdAt: new Date()
-      }
-    ];
-  }
-
-  selectDemoUser(user: User): void {
-    const password = this.getPasswordForUser(user.email);
-    this.loginForm.patchValue({
-      email: user.email,
-      password: password
-    });
-  }
-
-  private getPasswordForUser(email: string): string {
-    // Todas las contraseñas de la base de datos son 'password123'
-    const passwords: { [key: string]: string } = {
-      'admin@barbershop.com': 'password123',
-      'miguel@barbershop.com': 'password123',
-      'carlos@barbershop.com': 'password123',
-      'roberto@barbershop.com': 'password123',
-      'juan@email.com': 'password123',
-      'ana@email.com': 'password123',
-      'pedro@email.com': 'password123'
-    };
-    return passwords[email] || 'password123';
+    // Inicialización
   }
 
   getRoleLabel(role: UserRole): string {
@@ -338,22 +198,18 @@ export class LoginComponent implements OnInit {
           },
           error: (error) => {
             this.isLoading = false;
-            this.errorMessage = 'Credenciales inválidas. Usa uno de los usuarios de la base de datos.';
+            this.errorMessage = 'Credenciales inválidas. Por favor, intenta de nuevo.';
           }
         });
       } catch (error) {
         this.isLoading = false;
-        this.errorMessage = 'Credenciales inválidas. Usa uno de los usuarios de la base de datos.';
+        this.errorMessage = 'Credenciales inválidas. Por favor, intenta de nuevo.';
       }
     }
   }
 
   togglePassword(): void {
     this.showPassword = !this.showPassword;
-  }
-
-  toggleDemoUsers(): void {
-    this.showDemoUsers = !this.showDemoUsers;
   }
 
   goToRegister(): void {
