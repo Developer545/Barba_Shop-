@@ -40,7 +40,7 @@ interface TimeSlot {
                    [class.bg-indigo-50]="appointmentForm.get('serviceId')?.value === service.id"
                    class="p-3 sm:p-4 border-2 border-indigo-200 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 hover:border-indigo-400 hover:shadow-md">
                 <p class="font-semibold text-gray-900 text-sm sm:text-base">{{ service.name }}</p>
-                <p class="text-xs sm:text-sm text-gray-600 mt-1">${{ service.price }} • {{ service.duration }} min</p>
+                <p class="text-xs sm:text-sm text-gray-600 mt-1">\${{ service.price }} • {{ service.duration }} min</p>
               </div>
             </div>
           </div>
