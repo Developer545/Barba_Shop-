@@ -212,22 +212,22 @@ import Swal from 'sweetalert2';
 
           <!-- Tabbed Tables Section -->
           <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/40 overflow-hidden mb-8">
-            <!-- Tab Navigation -->
-            <div class="bg-gradient-to-r from-indigo-50 via-blue-50 to-purple-50 border-b border-indigo-100">
-              <nav class="flex space-x-2 p-2">
+            <!-- Tab Navigation - Responsive -->
+            <div class="bg-gradient-to-r from-indigo-50 via-blue-50 to-purple-50 border-b border-indigo-100 overflow-x-auto">
+              <nav class="flex space-x-1 sm:space-x-2 p-2 min-w-min sm:min-w-0">
                 <button *ngFor="let tab of tabs"
                         (click)="setActiveTab(tab.id)"
                         [class]="activeTab === tab.id ?
-                          'bg-white shadow-lg text-indigo-600 px-4 py-3 rounded-xl font-semibold text-sm flex items-center space-x-2 transition-all duration-300 transform scale-105' :
-                          'text-gray-600 hover:text-indigo-600 hover:bg-white/50 px-4 py-3 rounded-xl font-medium text-sm flex items-center space-x-2 transition-all duration-300'">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          'bg-white shadow-lg text-indigo-600 px-2 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm flex items-center space-x-1 sm:space-x-2 transition-all duration-300 whitespace-nowrap flex-shrink-0 sm:flex-shrink' :
+                          'text-gray-600 hover:text-indigo-600 hover:bg-white/50 px-2 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium text-xs sm:text-sm flex items-center space-x-1 sm:space-x-2 transition-all duration-300 whitespace-nowrap flex-shrink-0 sm:flex-shrink'">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="tab.icon"/>
                   </svg>
-                  <span>{{ tab.name }}</span>
-                  <span *ngIf="tab.id === 'barberos'" class="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs px-2.5 py-1 rounded-full font-bold shadow-md">{{ totalBarbers }}</span>
-                  <span *ngIf="tab.id === 'servicios'" class="bg-gradient-to-br from-green-500 to-emerald-600 text-white text-xs px-2.5 py-1 rounded-full font-bold shadow-md">{{ totalServices }}</span>
-                  <span *ngIf="tab.id === 'usuarios'" class="bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-xs px-2.5 py-1 rounded-full font-bold shadow-md">{{ users.length }}</span>
-                  <span *ngIf="tab.id === 'citas'" class="bg-gradient-to-br from-purple-500 to-pink-600 text-white text-xs px-2.5 py-1 rounded-full font-bold shadow-md">{{ appointments.length }}</span>
+                  <span class="hidden sm:inline">{{ tab.name }}</span>
+                  <span *ngIf="tab.id === 'barberos'" class="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-md">{{ totalBarbers }}</span>
+                  <span *ngIf="tab.id === 'servicios'" class="bg-gradient-to-br from-green-500 to-emerald-600 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-md">{{ totalServices }}</span>
+                  <span *ngIf="tab.id === 'usuarios'" class="bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-md">{{ users.length }}</span>
+                  <span *ngIf="tab.id === 'citas'" class="bg-gradient-to-br from-purple-500 to-pink-600 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-md">{{ appointments.length }}</span>
                 </button>
               </nav>
             </div>
@@ -386,83 +386,146 @@ import Swal from 'sweetalert2';
 
             <!-- SERVICIOS TAB -->
             <div *ngIf="activeTab === 'servicios'" class="tab-content">
-              <div class="overflow-x-auto">
+              <!-- Desktop Table View -->
+              <div class="hidden md:block overflow-x-auto">
                 <table class="w-full table-auto">
                   <thead>
                     <tr class="border-b border-gray-200">
-                      <th class="text-left py-3 px-4 font-medium text-gray-700">Servicio</th>
-                      <th class="text-left py-3 px-4 font-medium text-gray-700">Categoría</th>
-                      <th class="text-left py-3 px-4 font-medium text-gray-700">Precio</th>
-                      <th class="text-left py-3 px-4 font-medium text-gray-700">Duración</th>
-                      <th class="text-left py-3 px-4 font-medium text-gray-700">Estado</th>
-                      <th class="text-left py-3 px-4 font-medium text-gray-700">Acciones</th>
+                      <th class="text-left py-3 px-3 lg:px-4 font-medium text-xs lg:text-sm text-gray-700">Servicio</th>
+                      <th class="text-left py-3 px-3 lg:px-4 font-medium text-xs lg:text-sm text-gray-700">Categoría</th>
+                      <th class="text-left py-3 px-3 lg:px-4 font-medium text-xs lg:text-sm text-gray-700">Precio</th>
+                      <th class="text-left py-3 px-3 lg:px-4 font-medium text-xs lg:text-sm text-gray-700">Duración</th>
+                      <th class="text-left py-3 px-3 lg:px-4 font-medium text-xs lg:text-sm text-gray-700">Estado</th>
+                      <th class="text-left py-3 px-3 lg:px-4 font-medium text-xs lg:text-sm text-gray-700">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr *ngFor="let service of paginatedServices" class="border-b border-gray-100 hover:bg-gray-50">
-                      <td class="py-4 px-4">
+                      <td class="py-4 px-3 lg:px-4">
                         <div class="flex items-center space-x-3">
-                          <img [src]="service.image" [alt]="service.name" class="w-12 h-12 rounded-lg object-cover">
-                          <div>
-                            <p class="font-medium text-gray-900">{{ service.name }}</p>
-                            <p class="text-sm text-gray-600">{{ service.description }}</p>
+                          <img [src]="service.image" [alt]="service.name" class="w-10 h-10 rounded-lg object-cover">
+                          <div class="hidden sm:block">
+                            <p class="font-medium text-gray-900 text-sm">{{ service.name }}</p>
+                            <p class="text-xs text-gray-600 truncate">{{ service.description }}</p>
                           </div>
                         </div>
                       </td>
-                      <td class="py-4 px-4">
+                      <td class="py-4 px-3 lg:px-4 text-xs lg:text-sm">
                         <span [class]="getCategoryBadgeClass(service.category || ServiceCategory.HAIRCUT)">
                           {{ getCategoryDisplayName(service.category || ServiceCategory.HAIRCUT) }}
                         </span>
                       </td>
-                      <td class="py-4 px-4">
+                      <td class="py-4 px-3 lg:px-4 text-xs lg:text-sm">
                         <span class="font-medium text-gray-900">\${{ service.price }}</span>
                       </td>
-                      <td class="py-4 px-4">
+                      <td class="py-4 px-3 lg:px-4 text-xs lg:text-sm">
                         <span class="text-gray-700">{{ service.duration }} min</span>
                       </td>
-                      <td class="py-4 px-4">
+                      <td class="py-4 px-3 lg:px-4">
                         <span [class]="service.isActive ? 'px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full' : 'px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full'">
                           {{ service.isActive ? 'Activo' : 'Inactivo' }}
                         </span>
                       </td>
-                      <td class="py-4 px-4">
-                        <div class="flex space-x-2">
+                      <td class="py-4 px-3 lg:px-4">
+                        <div class="flex gap-1 lg:gap-2 flex-wrap">
                           <button (click)="editService(service)"
-                                  class="action-btn edit-btn">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  class="action-btn edit-btn text-xs lg:text-sm px-2 lg:px-3 py-1 lg:py-1.5">
+                            <svg class="w-3 lg:w-4 h-3 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                             </svg>
-                            Editar
+                            <span class="hidden lg:inline">Editar</span>
                           </button>
                           <button (click)="toggleServiceStatus(service)"
-                                  [class]="service.isActive ? 'action-btn deactivate-btn' : 'action-btn activate-btn'">
-                            <svg *ngIf="service.isActive" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  [class]="service.isActive ? 'action-btn deactivate-btn text-xs lg:text-sm px-2 lg:px-3 py-1 lg:py-1.5' : 'action-btn activate-btn text-xs lg:text-sm px-2 lg:px-3 py-1 lg:py-1.5'">
+                            <svg *ngIf="service.isActive" class="w-3 lg:w-4 h-3 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636"/>
                             </svg>
-                            <svg *ngIf="!service.isActive" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg *ngIf="!service.isActive" class="w-3 lg:w-4 h-3 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            {{ service.isActive ? 'Desactivar' : 'Activar' }}
+                            <span class="hidden lg:inline">{{ service.isActive ? 'Des.' : 'Act.' }}</span>
                           </button>
-                          <button (click)="deleteService(service)" class="action-btn delete-btn">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <button (click)="deleteService(service)" class="action-btn delete-btn text-xs lg:text-sm px-2 lg:px-3 py-1 lg:py-1.5">
+                            <svg class="w-3 lg:w-4 h-3 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                             </svg>
-                            Eliminar
+                            <span class="hidden lg:inline">Elim.</span>
                           </button>
                         </div>
                       </td>
                     </tr>
                   </tbody>
                 </table>
+              </div>
 
-                <div *ngIf="services.length === 0" class="text-center py-8">
-                  <p class="text-gray-500">No hay servicios registrados</p>
-                  <button (click)="openServiceModal()" class="mt-2 text-blue-600 hover:text-blue-800 font-medium">
-                    Crear primer servicio
-                  </button>
+              <!-- Mobile Card View -->
+              <div class="md:hidden space-y-3">
+                <div *ngFor="let service of paginatedServices"
+                     class="bg-gradient-to-r from-white to-green-50 border-2 border-green-100 rounded-lg p-3 hover:shadow-lg transition-all duration-200">
+                  <div class="flex items-start gap-3 mb-3">
+                    <img [src]="service.image" [alt]="service.name" class="w-16 h-16 rounded-lg object-cover flex-shrink-0">
+                    <div class="flex-1 min-w-0">
+                      <p class="font-semibold text-gray-900 text-sm truncate">{{ service.name }}</p>
+                      <p class="text-xs text-gray-600 truncate">{{ service.description }}</p>
+                    </div>
+                  </div>
+
+                  <div class="space-y-2">
+                    <!-- Categoría -->
+                    <div class="flex items-center gap-2 text-sm">
+                      <span class="font-semibold text-gray-700 text-xs whitespace-nowrap">Categoría:</span>
+                      <span [class]="getCategoryBadgeClass(service.category || ServiceCategory.HAIRCUT)" class="text-xs">
+                        {{ getCategoryDisplayName(service.category || ServiceCategory.HAIRCUT) }}
+                      </span>
+                    </div>
+
+                    <!-- Precio y Duración -->
+                    <div class="flex gap-4">
+                      <div>
+                        <span class="font-semibold text-gray-700 text-xs block">Precio</span>
+                        <span class="text-sm font-bold text-green-600">\${{ service.price }}</span>
+                      </div>
+                      <div>
+                        <span class="font-semibold text-gray-700 text-xs block">Duración</span>
+                        <span class="text-sm font-semibold text-gray-700">{{ service.duration }} min</span>
+                      </div>
+                    </div>
+
+                    <!-- Estado -->
+                    <div class="flex items-center gap-2">
+                      <span class="font-semibold text-gray-700 text-xs whitespace-nowrap">Estado:</span>
+                      <span [class]="service.isActive ? 'px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full' : 'px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full'">
+                        {{ service.isActive ? 'Activo' : 'Inactivo' }}
+                      </span>
+                    </div>
+
+                    <!-- Acciones -->
+                    <div class="flex gap-2 pt-2 flex-wrap">
+                      <button (click)="editService(service)" class="flex-1 action-btn edit-btn text-xs px-2 py-1.5">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                        Editar
+                      </button>
+                      <button (click)="deleteService(service)" class="flex-1 action-btn delete-btn text-xs px-2 py-1.5">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              <!-- Empty state -->
+              <div *ngIf="paginatedServices.length === 0" class="text-center py-8">
+                <p class="text-gray-500">No hay servicios registrados</p>
+                <button (click)="openServiceModal()" class="mt-2 text-blue-600 hover:text-blue-800 font-medium text-sm">
+                  Crear primer servicio
+                </button>
+              </div>
+            </div>
 
               <!-- Paginación para Servicios -->
               <div *ngIf="serviceTotalPages > 1" class="flex items-center justify-between px-6 py-4 border-t border-gray-200">
@@ -679,35 +742,36 @@ import Swal from 'sweetalert2';
 
             <!-- USUARIOS TAB -->
             <div *ngIf="activeTab === 'usuarios'" class="tab-content">
-              <div class="overflow-x-auto">
+              <!-- Desktop Table View -->
+              <div class="hidden md:block overflow-x-auto">
                 <table class="w-full table-auto">
                   <thead>
                     <tr class="bg-gray-50">
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono</th>
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                      <th class="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
+                      <th class="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                      <th class="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono</th>
+                      <th class="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                      <th class="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                      <th class="px-3 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                     </tr>
                   </thead>
                   <tbody class="bg-white divide-y divide-gray-200">
                     <tr *ngFor="let user of paginatedUsers" class="hover:bg-gray-50">
-                      <td class="px-6 py-4 whitespace-nowrap">
+                      <td class="px-3 lg:px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                           <img class="h-10 w-10 rounded-full" [src]="user.avatar" [alt]="user.name">
-                          <div class="ml-4">
+                          <div class="ml-4 hidden sm:block">
                             <div class="text-sm font-medium text-gray-900">{{ user.name }}</div>
                           </div>
                         </div>
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
+                      <td class="px-3 lg:px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-900">{{ user.email }}</div>
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
+                      <td class="px-3 lg:px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-900">{{ user.phone || 'N/A' }}</div>
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
+                      <td class="px-3 lg:px-6 py-4 whitespace-nowrap">
                         <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
                               [ngClass]="{
                                 'bg-red-100 text-red-800': user.role === 'ADMIN',
@@ -717,7 +781,7 @@ import Swal from 'sweetalert2';
                           {{ user.role }}
                         </span>
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
+                      <td class="px-3 lg:px-6 py-4 whitespace-nowrap">
                         <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
                               [ngClass]="{
                                 'bg-green-100 text-green-800': user.isActive,
@@ -726,56 +790,114 @@ import Swal from 'sweetalert2';
                           {{ user.isActive ? 'Activo' : 'Inactivo' }}
                         </span>
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex space-x-2">
-                          <button (click)="openUserModal(user)" class="action-btn edit-btn">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <td class="px-3 lg:px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex gap-1 lg:gap-2 flex-wrap">
+                          <button (click)="openUserModal(user)" class="action-btn edit-btn text-xs lg:text-sm px-2 lg:px-3 py-1 lg:py-1.5">
+                            <svg class="w-3 lg:w-4 h-3 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                             </svg>
-                            Editar
+                            <span class="hidden lg:inline">Editar</span>
                           </button>
                           <button (click)="toggleUserStatus(user.id, !user.isActive)"
-                                  [class]="user.isActive ? 'action-btn deactivate-btn' : 'action-btn activate-btn'">
-                            <svg *ngIf="user.isActive" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  [class]="user.isActive ? 'action-btn deactivate-btn text-xs lg:text-sm px-2 lg:px-3 py-1 lg:py-1.5' : 'action-btn activate-btn text-xs lg:text-sm px-2 lg:px-3 py-1 lg:py-1.5'">
+                            <svg *ngIf="user.isActive" class="w-3 lg:w-4 h-3 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636"/>
                             </svg>
-                            <svg *ngIf="!user.isActive" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg *ngIf="!user.isActive" class="w-3 lg:w-4 h-3 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            {{ user.isActive ? 'Desactivar' : 'Activar' }}
+                            <span class="hidden lg:inline">{{ user.isActive ? 'Des.' : 'Act.' }}</span>
                           </button>
-                          <button (click)="deleteUser(user)" class="action-btn delete-btn">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <button (click)="deleteUser(user)" class="action-btn delete-btn text-xs lg:text-sm px-2 lg:px-3 py-1 lg:py-1.5">
+                            <svg class="w-3 lg:w-4 h-3 lg:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                             </svg>
-                            Eliminar
+                            <span class="hidden lg:inline">Elim.</span>
                           </button>
                         </div>
                       </td>
                     </tr>
                   </tbody>
                 </table>
+              </div>
 
-                <!-- Empty state -->
-                <div *ngIf="paginatedUsers.length === 0" class="text-center py-12">
-                  <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
-                  </svg>
-                  <h3 class="mt-2 text-sm font-medium text-gray-900">No hay usuarios</h3>
-                  <p class="mt-1 text-sm text-gray-500">Comienza creando tu primer usuario.</p>
-                  <div class="mt-6">
-                    <button (click)="openUserModal()" type="button" class="btn-primary">
-                      <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                      </svg>
-                      Crear Usuario
-                    </button>
+              <!-- Mobile Card View -->
+              <div class="md:hidden space-y-3">
+                <div *ngFor="let user of paginatedUsers"
+                     class="bg-gradient-to-r from-white to-indigo-50 border-2 border-indigo-100 rounded-lg p-3 hover:shadow-lg transition-all duration-200">
+                  <div class="space-y-2">
+                    <!-- Usuario -->
+                    <div class="flex items-start gap-3">
+                      <img class="h-12 w-12 rounded-full object-cover flex-shrink-0" [src]="user.avatar" [alt]="user.name">
+                      <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-gray-900 text-sm truncate">{{ user.name }}</p>
+                        <p class="text-xs text-gray-600 truncate">{{ user.email }}</p>
+                      </div>
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div class="flex items-center gap-2 text-sm">
+                      <span class="font-semibold text-gray-700 text-xs whitespace-nowrap">Tel:</span>
+                      <span class="text-gray-700">{{ user.phone || 'N/A' }}</span>
+                    </div>
+
+                    <!-- Rol y Estado -->
+                    <div class="flex gap-2 flex-wrap">
+                      <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                            [ngClass]="{
+                              'bg-red-100 text-red-800': user.role === 'ADMIN',
+                              'bg-blue-100 text-blue-800': user.role === 'BARBER',
+                              'bg-green-100 text-green-800': user.role === 'CLIENT'
+                            }">
+                        {{ user.role }}
+                      </span>
+                      <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                            [ngClass]="{
+                              'bg-green-100 text-green-800': user.isActive,
+                              'bg-red-100 text-red-800': !user.isActive
+                            }">
+                        {{ user.isActive ? 'Activo' : 'Inactivo' }}
+                      </span>
+                    </div>
+
+                    <!-- Acciones -->
+                    <div class="flex gap-2 pt-2 flex-wrap">
+                      <button (click)="openUserModal(user)" class="flex-1 action-btn edit-btn text-xs px-2 py-1.5">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                        Editar
+                      </button>
+                      <button (click)="deleteUser(user)" class="flex-1 action-btn delete-btn text-xs px-2 py-1.5">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Eliminar
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Pagination -->
-              <div *ngIf="totalUsers > usersPerPage" class="mt-6 flex items-center justify-between">
+              <!-- Empty state -->
+              <div *ngIf="paginatedUsers.length === 0" class="text-center py-12">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No hay usuarios</h3>
+                <p class="mt-1 text-sm text-gray-500">Comienza creando tu primer usuario.</p>
+                <div class="mt-6">
+                  <button (click)="openUserModal()" type="button" class="btn-primary text-sm">
+                    <svg class="-ml-1 mr-2 h-5 w-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    Crear Usuario
+                  </button>
+                </div>
+              </div>
+
+              <!-- Pagination for Users -->
+              <div *ngIf="totalUsers > usersPerPage" class="mt-6 flex items-center justify-between px-6 py-4 border-t border-gray-200">
                 <div>
                   <p class="text-sm text-gray-700">
                     Mostrando {{ (currentUserPage - 1) * usersPerPage + 1 }} a {{ Math.min(currentUserPage * usersPerPage, totalUsers) }} de {{ totalUsers }} usuarios
@@ -851,19 +973,19 @@ import Swal from 'sweetalert2';
 
           <!-- Barber Tabbed Section -->
           <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/40 overflow-hidden mb-8">
-            <!-- Tab Navigation -->
-            <div class="bg-gradient-to-r from-indigo-50 via-blue-50 to-purple-50 border-b border-indigo-100">
-              <nav class="flex space-x-2 p-2">
+            <!-- Tab Navigation - Responsive -->
+            <div class="bg-gradient-to-r from-indigo-50 via-blue-50 to-purple-50 border-b border-indigo-100 overflow-x-auto">
+              <nav class="flex space-x-1 sm:space-x-2 p-2 min-w-min sm:min-w-0">
                 <button *ngFor="let tab of barberTabs"
                         (click)="activeBarberTab = tab.id"
                         [class]="activeBarberTab === tab.id ?
-                          'bg-white shadow-lg text-indigo-600 px-4 py-3 rounded-xl font-semibold text-sm flex items-center space-x-2 transition-all duration-300 transform scale-105' :
-                          'text-gray-600 hover:text-indigo-600 hover:bg-white/50 px-4 py-3 rounded-xl font-medium text-sm flex items-center space-x-2 transition-all duration-300'">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          'bg-white shadow-lg text-indigo-600 px-2 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm flex items-center space-x-1 sm:space-x-2 transition-all duration-300 whitespace-nowrap flex-shrink-0 sm:flex-shrink' :
+                          'text-gray-600 hover:text-indigo-600 hover:bg-white/50 px-2 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium text-xs sm:text-sm flex items-center space-x-1 sm:space-x-2 transition-all duration-300 whitespace-nowrap flex-shrink-0 sm:flex-shrink'">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="tab.icon"/>
                   </svg>
-                  <span>{{ tab.name }}</span>
-                  <span *ngIf="tab.id === 'mis-citas'" class="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs px-2.5 py-1 rounded-full font-bold shadow-md">{{ myAppointmentsToday }}</span>
+                  <span class="hidden sm:inline">{{ tab.name }}</span>
+                  <span *ngIf="tab.id === 'mis-citas'" class="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-md">{{ myAppointmentsToday }}</span>
                 </button>
               </nav>
             </div>
@@ -1138,7 +1260,6 @@ import Swal from 'sweetalert2';
             </div>
           </div>
         </div>
-      </div>
 
       <!-- Modal para Crear Barbero -->
       <div *ngIf="showBarberModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">

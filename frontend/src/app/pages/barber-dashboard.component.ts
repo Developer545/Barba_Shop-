@@ -68,19 +68,19 @@ import { User } from '../models/user.model';
 
         <!-- Tabbed Section -->
         <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/40 overflow-hidden mb-8">
-          <!-- Tab Navigation -->
-          <div class="bg-gradient-to-r from-indigo-50 via-blue-50 to-purple-50 border-b border-indigo-100">
-            <nav class="flex space-x-2 p-2">
+          <!-- Tab Navigation - Responsive -->
+          <div class="bg-gradient-to-r from-indigo-50 via-blue-50 to-purple-50 border-b border-indigo-100 overflow-x-auto">
+            <nav class="flex space-x-1 sm:space-x-2 p-2 min-w-min sm:min-w-0">
               <button *ngFor="let tab of tabs"
                       (click)="activeTab = tab.id"
                       [class]="activeTab === tab.id
-                        ? 'bg-white shadow-lg text-indigo-600 px-4 py-3 rounded-xl font-semibold text-sm flex items-center space-x-2 transition-all duration-300 transform scale-105'
-                        : 'text-gray-600 hover:text-indigo-600 hover:bg-white/50 px-4 py-3 rounded-xl font-medium text-sm flex items-center space-x-2 transition-all duration-300'">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        ? 'bg-white shadow-lg text-indigo-600 px-2 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm flex items-center space-x-1 sm:space-x-2 transition-all duration-300 whitespace-nowrap flex-shrink-0 sm:flex-shrink'
+                        : 'text-gray-600 hover:text-indigo-600 hover:bg-white/50 px-2 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium text-xs sm:text-sm flex items-center space-x-1 sm:space-x-2 transition-all duration-300 whitespace-nowrap flex-shrink-0 sm:flex-shrink'">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="tab.icon"/>
                 </svg>
-                <span>{{ tab.name }}</span>
-                <span *ngIf="tab.id === 'mis-citas'" class="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs px-2.5 py-1 rounded-full font-bold shadow-md">{{ appointments.length }}</span>
+                <span class="hidden sm:inline">{{ tab.name }}</span>
+                <span *ngIf="tab.id === 'mis-citas'" class="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs px-2 py-0.5 rounded-full font-bold shadow-md">{{ appointments.length }}</span>
               </button>
             </nav>
           </div>
