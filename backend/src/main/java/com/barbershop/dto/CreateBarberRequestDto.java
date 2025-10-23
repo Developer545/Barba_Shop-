@@ -27,6 +27,12 @@ public class CreateBarberRequestDto {
     private List<String> specialties;
     private String description;
 
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters")
+    private String password;
+
+    private String avatar;
+
     // Constructors
     public CreateBarberRequestDto() {}
 
@@ -55,4 +61,10 @@ public class CreateBarberRequestDto {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public String getAvatar() { return avatar; }
+    public void setAvatar(String avatar) { this.avatar = avatar; }
 }

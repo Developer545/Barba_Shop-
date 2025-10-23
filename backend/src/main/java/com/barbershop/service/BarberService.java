@@ -69,11 +69,11 @@ public class BarberService {
         User user = new User();
         user.setName(request.getName());
         user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode("defaultPassword123")); // Contraseña temporal
+        user.setPassword(passwordEncoder.encode(request.getPassword())); // Usar la contraseña del request
         user.setPhone(request.getPhone());
         user.setRole(barberRole);
         user.setIsActive(true);
-        user.setAvatar(generateAvatarUrl(request.getName()));
+        user.setAvatar(request.getAvatar() != null ? request.getAvatar() : generateAvatarUrl(request.getName())); // Usar avatar del request si está disponible
 
         User savedUser = userRepository.save(user);
 
