@@ -345,7 +345,16 @@ export class AppointmentSchedulerComponent implements OnInit {
 
   onSubmit(): void {
     if (this.appointmentForm.valid) {
-      this.submit.emit(this.appointmentForm.value);
+      // Create a plain object with only primitive values to avoid NG02100 error
+      const formValue = this.appointmentForm.value;
+      const appointmentPayload = {
+        serviceId: Number(formValue.serviceId),
+        barberId: Number(formValue.barberId),
+        date: String(formValue.date),
+        time: String(formValue.time),
+        notes: String(formValue.notes || '')
+      };
+      this.submit.emit(appointmentPayload);
     }
   }
 }
