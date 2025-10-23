@@ -231,7 +231,7 @@ import { AppointmentsCalendarComponent } from './appointments-calendar.component
                             </p>
                             <p>
                               <span class="font-semibold">Fecha:</span>
-                              <span class="text-gray-700 ml-1">{{ appointment.date | date:'d MMM':'' : 'es' }} - {{ appointment.time }}</span>
+                              <span class="text-gray-700 ml-1">{{ formatAppointmentDate(appointment.date) }} - {{ appointment.time }}</span>
                             </p>
                             <p *ngIf="appointment.notes" class="text-gray-700">
                               <span class="font-semibold">Notas:</span> {{ appointment.notes }}
@@ -483,6 +483,34 @@ export class ClientDashboardComponent implements OnInit {
       'CLIENT': 'Cliente'
     };
     return labels[role] || role;
+  }
+
+  formatAppointmentDate(dateValue: any): string {
+    if (!dateValue) return '';
+
+    let date: Date;
+
+    // Handle different input types
+    if (typeof dateValue === 'string') {
+      date = new Date(dateValue);
+    } else if (dateValue instanceof Date) {
+      date = dateValue;
+    } else if (typeof dateValue === 'number') {
+      date = new Date(dateValue);
+    } else {
+      return '';
+    }
+
+    // Validate date
+    if (isNaN(date.getTime())) {
+      return '';
+    }
+
+    // Format: "23 Oct" style
+    const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    return `${day} ${month}`;
   }
 
   logout(): void {

@@ -2,7 +2,7 @@ import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/cor
 import { CommonModule } from '@angular/common';
 
 interface CalendarEvent {
-  date: Date;
+  dateString: string; // YYYY-MM-DD format
   time: string;
   barberName: string;
   serviceName: string;
@@ -11,7 +11,7 @@ interface CalendarEvent {
 }
 
 interface CalendarDay {
-  date: Date;
+  dateString: string; // YYYY-MM-DD format
   day: number;
   month: number;
   year: number;
@@ -186,16 +186,16 @@ export class AppointmentsCalendarComponent implements OnInit, OnChanges {
     dayToCheck.setHours(0, 0, 0, 0);
 
     const isToday = dayToCheck.getTime() === today.getTime();
+    const dateString = this.formatDateToString(date);
 
     // Get appointments for this day
     const dayAppointments = this.appointments
       .filter(apt => {
-        const aptDate = new Date(apt.date);
-        aptDate.setHours(0, 0, 0, 0);
-        return aptDate.getTime() === dayToCheck.getTime();
+        const aptDateString = this.normalizeDateString(apt.date);
+        return aptDateString === dateString;
       })
       .map(apt => ({
-        date: new Date(apt.date),
+        dateString: this.normalizeDateString(apt.date),
         time: apt.time,
         barberName: apt.barberName,
         serviceName: apt.serviceName,
@@ -204,7 +204,7 @@ export class AppointmentsCalendarComponent implements OnInit, OnChanges {
       }));
 
     return {
-      date: new Date(date),
+      dateString: dateString,
       day: date.getDate(),
       month: date.getMonth(),
       year: date.getFullYear(),
@@ -212,6 +212,23 @@ export class AppointmentsCalendarComponent implements OnInit, OnChanges {
       isToday,
       appointments: dayAppointments
     };
+  }
+
+  private formatDateToString(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private normalizeDateString(dateValue: any): string {
+    if (typeof dateValue === 'string') {
+      // Extract just the date part if it's an ISO string
+      return dateValue.split('T')[0];
+    } else if (dateValue instanceof Date) {
+      return this.formatDateToString(dateValue);
+    }
+    return '';
   }
 
   previousMonth(): void {
