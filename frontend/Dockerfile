@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
 COPY . .
-RUN npx ng build
+RUN npm run build
 
 # Stage 2: Runtime
 FROM node:20-alpine
