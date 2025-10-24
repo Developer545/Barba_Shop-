@@ -1,14 +1,31 @@
-# Stage 1: Build
-FROM node:20 AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm install --legacy-peer-deps
-COPY . .
-RUN chmod +x node_modules/.bin/* && ./node_modules/.bin/ng build
+# Stage 1: Build Angular Application
+FROM node:18-alpine AS builder
 
-# Stage 2: Runtime with Nginx
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN npm run build
+
+# Stage 2: Serve with Nginx
 FROM nginx:alpine
+
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Copy built application from builder
 COPY --from=builder /app/dist/barbershop-frontend /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 3000
+
+# Expose port
+EXPOSE 80
+
+# Start Nginx
 CMD ["nginx", "-g", "daemon off;"]

@@ -5,11 +5,18 @@
 /frontend/src/**/*.js
 /frontend/src/**/*.js.map
 
+# Maven
+/backend/target
+/backend/repo
+/backend/.mvn
+*.jar
+
 # IDEs and editors
 .vscode/*
 !.vscode/extensions.json
 .idea
 *.suo
+*.iml
 *.sln.docstates
 *.[Cc]ache/
 *.ide
@@ -37,3 +44,13 @@ yarn-lock.json
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# System
+.classpath
+.project
+.settings/
+
+# Logs
+logs/
+*.log
