@@ -1,0 +1,144 @@
+╔═══════════════════════════════════════════════════════════════════════════╗
+║  INSTRUCCIONES PARA EJECUTAR EL PROYECTO LOCALMENTE                      ║
+║  BarberShop SaaS - Sistema de Gestión de Barbería                        ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+REQUISITOS:
+- Docker Desktop instalado (https://www.docker.com/products/docker-desktop)
+- Git instalado
+- 10-15 minutos de tiempo
+
+═══════════════════════════════════════════════════════════════════════════════
+
+PASOS (Igual en Windows, Mac, Linux):
+
+1. CLONAR EL REPOSITORIO
+   
+   Abrir terminal/PowerShell y ejecutar:
+   
+   git clone https://github.com/Developer545/Barba_Shop-.git
+   cd Barba_Shop-
+
+2. CONFIGURAR VARIABLES DE ENTORNO
+   
+   Copiar el archivo de ejemplo:
+   
+   cp .env.example .env          (en Mac/Linux)
+   copy .env.example .env        (en Windows)
+   
+   Abrir .env en VS Code y agregar las credenciales de Neon:
+   
+   DATABASE_URL=postgresql://neondb_owner:CONTRASEÑA@ep-xxx.us-east-1.aws.neon.tech/neondb?sslmode=require...
+   DATABASE_USERNAME=neondb_owner
+   DATABASE_PASSWORD=CONTRASEÑA
+   
+   (Pedir las credenciales a Daniel)
+
+3. INICIAR CON DOCKER
+   
+   docker-compose up --build
+   
+   Esperar a que aparezca algo como:
+   
+   barbershop-backend   | ... Started BarberShopApplication
+   barbershop-frontend  | ...listening on port 80
+   
+   ✓ Cuando veas esto, todo funciona!
+
+4. ACCEDER AL PROYECTO
+   
+   Frontend: http://localhost:4200
+   Backend:  http://localhost:8080
+   
+   Usuario de prueba:
+   Email: admin@barbershop.com
+   Password: password123
+
+═══════════════════════════════════════════════════════════════════════════════
+
+COMANDOS ÚTILES:
+
+Ver logs:
+  docker-compose logs -f
+
+Logs solo del backend:
+  docker-compose logs -f backend
+
+Logs solo del frontend:
+  docker-compose logs -f frontend
+
+Parar servicios:
+  docker-compose down
+
+Iniciar sin reconstruir (después de la primera vez):
+  docker-compose up
+
+═══════════════════════════════════════════════════════════════════════════════
+
+PROBLEMAS COMUNES:
+
+❌ "Connection refused" en la BD
+   → Verificar DATABASE_URL en .env
+   → Verificar que Neon está activo en https://console.neon.tech
+
+❌ "Puerto 4200 en uso"
+   → Cambiar en docker-compose.yml: "4201:80" en lugar de "4200:80"
+
+❌ Contenedores no inician
+   → Ejecutar: docker-compose down -v
+   → Luego: docker-compose up --build
+
+═══════════════════════════════════════════════════════════════════════════════
+
+DOCUMENTACIÓN:
+
+- README.md: Descripción general del proyecto
+- DOCKER_SETUP.md: Guía detallada de Docker y troubleshooting
+- .env.example: Todas las variables disponibles
+
+═══════════════════════════════════════════════════════════════════════════════
+
+CREDENCIALES DE PRUEBA:
+
+Admin:
+  Email: admin@barbershop.com
+  Password: password123
+  Acceso: Panel de administración completo
+
+Barber:
+  Email: miguel@barbershop.com
+  Password: password123
+  Acceso: Gestión de citas y horarios
+
+Client:
+  Email: juan@email.com
+  Password: password123
+  Acceso: Reserva y gestión de citas personales
+
+═══════════════════════════════════════════════════════════════════════════════
+
+TECNOLOGÍA USADA:
+
+Backend:
+- Java 17
+- Spring Boot 3.2
+- Spring Security (JWT + Refresh Tokens)
+- PostgreSQL (Neon)
+
+Frontend:
+- Angular 17
+- Tailwind CSS
+- RxJS
+
+DevOps:
+- Docker
+- Docker Compose
+- Nginx
+
+═══════════════════════════════════════════════════════════════════════════════
+
+¡LISTO! Ahora tienes el proyecto corriendo localmente.
+
+Si tienes problemas, revisa DOCKER_SETUP.md o contacta a Daniel.
+
+═══════════════════════════════════════════════════════════════════════════════
