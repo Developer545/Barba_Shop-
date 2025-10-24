@@ -6,8 +6,8 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (use --legacy-peer-deps for Angular version conflicts)
+RUN npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .
