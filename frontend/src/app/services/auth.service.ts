@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError, interval } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, switchMap } from 'rxjs/operators';
 import { User, UserRole, LoginData, RegisterData } from '../models/user.model';
 import { environment } from '../../environments/environment';
 
@@ -12,6 +12,7 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$: Observable<User | null> = this.currentUserSubject.asObservable();
   private apiUrl = environment.apiUrl;
+  private refreshTokenTimeout?: any;
 
   constructor(private http: HttpClient) {
     // Verificar si hay un usuario guardado en localStorage
@@ -19,6 +20,7 @@ export class AuthService {
     const savedToken = localStorage.getItem('token');
     if (savedUser && savedToken) {
       this.currentUserSubject.next(JSON.parse(savedUser));
+      this.scheduleTokenRefresh();
     }
   }
 
@@ -77,10 +79,17 @@ export class AuthService {
               createdAt: new Date(response.user.createdAt)
             };
 
-            // Guardar token y usuario
+            // Guardar token, refresh token y usuario
             localStorage.setItem('token', response.token);
+            if (response.refreshToken) {
+              localStorage.setItem('refreshToken', response.refreshToken);
+            }
             localStorage.setItem('currentUser', JSON.stringify(user));
             this.currentUserSubject.next(user);
+
+            // Schedule automatic token refresh
+            this.scheduleTokenRefresh();
+
             return user;
           }
           throw new Error('Respuesta inválida del servidor');
@@ -111,9 +120,41 @@ export class AuthService {
     return of(newUser);
   }
 
-  logout(): void {
+  logout(): Observable<string> {
+    const token = localStorage.getItem('token');
+
+    // Clear timeout
+    if (this.refreshTokenTimeout) {
+      clearTimeout(this.refreshTokenTimeout);
+    }
+
+    if (token) {
+      return this.http.post<any>(`${this.apiUrl}/auth/logout`, {}, {
+        headers: new HttpHeaders({
+          'Authorization': `Bearer ${token}`
+        })
+      }).pipe(
+        map(() => {
+          this.clearAuthData();
+          return 'Logged out successfully';
+        }),
+        catchError(error => {
+          console.error('Error during logout:', error);
+          // Clear data anyway even if logout fails
+          this.clearAuthData();
+          return of('Logged out (partial)');
+        })
+      );
+    }
+
+    this.clearAuthData();
+    return of('No token to logout');
+  }
+
+  private clearAuthData(): void {
     localStorage.removeItem('currentUser');
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     this.currentUserSubject.next(null);
   }
 
@@ -162,5 +203,93 @@ export class AuthService {
     };
 
     return permissions[user.role]?.includes(permission) || false;
+  }
+
+  // Refresh Token Methods
+  private scheduleTokenRefresh(): void {
+    // Refresh token 5 minutes before expiration (JWT typically expires in 15 minutes)
+    // Schedule refresh every 10 minutes to be safe
+    if (this.refreshTokenTimeout) {
+      clearTimeout(this.refreshTokenTimeout);
+    }
+
+    this.refreshTokenTimeout = setTimeout(() => {
+      this.refreshAccessToken().subscribe({
+        next: () => {
+          console.log('Token refreshed successfully');
+          this.scheduleTokenRefresh(); // Schedule next refresh
+        },
+        error: (error) => {
+          console.error('Failed to refresh token:', error);
+          this.logout().subscribe();
+        }
+      });
+    }, 10 * 60 * 1000); // 10 minutes
+  }
+
+  refreshAccessToken(): Observable<User> {
+    const refreshToken = localStorage.getItem('refreshToken');
+
+    if (!refreshToken) {
+      return throwError(() => new Error('No refresh token available'));
+    }
+
+    return this.http.post<any>(`${this.apiUrl}/auth/refresh`, {
+      refreshToken: refreshToken
+    }).pipe(
+      map(response => {
+        if (response.token && response.user) {
+          // Update token
+          localStorage.setItem('token', response.token);
+
+          // Update refresh token if provided
+          if (response.refreshToken) {
+            localStorage.setItem('refreshToken', response.refreshToken);
+          }
+
+          // Map and update current user
+          const user: User = {
+            id: response.user.id,
+            name: response.user.name,
+            email: response.user.email,
+            phone: response.user.phone,
+            role: this.mapBackendRoleToFrontend(response.user.role),
+            avatar: response.user.avatar,
+            createdAt: new Date(response.user.createdAt)
+          };
+
+          localStorage.setItem('currentUser', JSON.stringify(user));
+          this.currentUserSubject.next(user);
+
+          return user;
+        }
+        throw new Error('Invalid response from refresh endpoint');
+      }),
+      catchError(error => {
+        console.error('Token refresh failed:', error);
+        this.clearAuthData();
+        return throwError(() => new Error('Failed to refresh token'));
+      })
+    );
+  }
+
+  validateToken(): Observable<boolean> {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      return of(false);
+    }
+
+    return this.http.get<boolean>(`${this.apiUrl}/auth/validate-token`, {
+      headers: new HttpHeaders({
+        'Authorization': `Bearer ${token}`
+      })
+    }).pipe(
+      catchError(() => of(false))
+    );
+  }
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem('refreshToken');
   }
 }

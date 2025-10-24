@@ -2168,8 +2168,15 @@ export class DashboardComponent implements OnInit {
   }
 
   logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+    this.authService.logout().subscribe({
+      next: () => {
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        // Even if logout fails, still navigate to login
+        this.router.navigate(['/login']);
+      }
+    });
   }
 
   // Modal methods

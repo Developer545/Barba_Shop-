@@ -2,9 +2,13 @@ package com.barbershop.service;
 
 import com.barbershop.config.JwtTokenProvider;
 import com.barbershop.dto.*;
+import com.barbershop.entity.RefreshToken;
 import com.barbershop.entity.Role;
+import com.barbershop.entity.TokenBlacklist;
 import com.barbershop.entity.User;
+import com.barbershop.repository.RefreshTokenRepository;
 import com.barbershop.repository.RoleRepository;
+import com.barbershop.repository.TokenBlacklistRepository;
 import com.barbershop.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,6 +18,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @Transactional
@@ -34,6 +40,12 @@ public class AuthService {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired
+    private TokenBlacklistRepository tokenBlacklistRepository;
+
     public AuthResponseDto login(LoginRequestDto loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
@@ -48,9 +60,25 @@ public class AuthService {
         User user = userRepository.findByEmail(loginRequest.getEmail())
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        UserDto userDto = convertToUserDto(user);
+        // Generate and save refresh token
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getEmail());
+        LocalDateTime refreshTokenExpiry = jwtTokenProvider.getRefreshTokenExpiryDate();
 
-        return new AuthResponseDto(jwt, userDto);
+        // Revoke previous refresh token if exists
+        refreshTokenRepository.findByUserAndIsRevokedFalse(user).ifPresent(token -> {
+            token.setIsRevoked(true);
+            refreshTokenRepository.save(token);
+        });
+
+        // Save new refresh token
+        RefreshToken newRefreshToken = new RefreshToken(refreshToken, user, refreshTokenExpiry);
+        refreshTokenRepository.save(newRefreshToken);
+
+        UserDto userDto = convertToUserDto(user);
+        AuthResponseDto response = new AuthResponseDto(jwt, userDto);
+        response.setRefreshToken(refreshToken);
+
+        return response;
     }
 
     public AuthResponseDto register(RegisterRequestDto registerRequest) {
@@ -103,6 +131,86 @@ public class AuthService {
                 userRepository.save(user);
             }
         }
+    }
+
+    public AuthResponseDto refreshToken(String refreshToken) {
+        // Check if token is blacklisted
+        if (tokenBlacklistRepository.existsByToken(refreshToken)) {
+            throw new RuntimeException("Refresh token has been revoked");
+        }
+
+        // Validate refresh token
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            throw new RuntimeException("Invalid or expired refresh token");
+        }
+
+        String username = jwtTokenProvider.getUsernameFromToken(refreshToken);
+        RefreshToken storedToken = refreshTokenRepository.findByToken(refreshToken)
+            .orElseThrow(() -> new RuntimeException("Refresh token not found in database"));
+
+        if (storedToken.getIsRevoked() || storedToken.isExpired()) {
+            throw new RuntimeException("Refresh token is invalid or expired");
+        }
+
+        User user = userRepository.findByEmail(username)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Generate new JWT token
+        String newJwt = jwtTokenProvider.generateTokenFromUsername(username);
+
+        UserDto userDto = convertToUserDto(user);
+        AuthResponseDto response = new AuthResponseDto(newJwt, userDto);
+        response.setRefreshToken(refreshToken);
+
+        return response;
+    }
+
+    public void logout(String token) {
+        try {
+            // Validate token format
+            if (!jwtTokenProvider.validateToken(token)) {
+                throw new RuntimeException("Invalid token");
+            }
+
+            // Get token expiry date
+            LocalDateTime expiryDate = LocalDateTime.now();
+            if (jwtTokenProvider.isTokenExpired(token)) {
+                expiryDate = LocalDateTime.now().plusSeconds(3600); // 1 hour buffer
+            } else {
+                // Token will expire in jwt.expiration milliseconds
+                expiryDate = LocalDateTime.now().plusSeconds(900); // 15 minutes (default token expiration)
+            }
+
+            // Add token to blacklist
+            TokenBlacklist blacklistedToken = new TokenBlacklist(token, expiryDate, "logout");
+            tokenBlacklistRepository.save(blacklistedToken);
+
+            // Revoke associated refresh tokens
+            String username = jwtTokenProvider.getUsernameFromToken(token);
+            User user = userRepository.findByEmail(username).orElse(null);
+            if (user != null) {
+                refreshTokenRepository.findByUserAndIsRevokedFalse(user).ifPresent(refreshToken -> {
+                    refreshToken.setIsRevoked(true);
+                    refreshTokenRepository.save(refreshToken);
+                });
+            }
+
+            // Clear security context
+            SecurityContextHolder.clearContext();
+        } catch (Exception ex) {
+            System.err.println("Error during logout: " + ex.getMessage());
+        }
+    }
+
+    public boolean isTokenBlacklisted(String token) {
+        return tokenBlacklistRepository.existsByToken(token);
+    }
+
+    // Clean up expired tokens (should be called periodically)
+    public void cleanupExpiredTokens() {
+        LocalDateTime now = LocalDateTime.now();
+        tokenBlacklistRepository.deleteByExpiryDateBefore(now);
+        refreshTokenRepository.deleteByExpiryDateBefore(now);
     }
 
     private UserDto convertToUserDto(User user) {

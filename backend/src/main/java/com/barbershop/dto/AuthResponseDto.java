@@ -4,6 +4,7 @@ public class AuthResponseDto {
     private String token;
     private String tokenType = "Bearer";
     private UserDto user;
+    private String refreshToken;
 
     // Constructors
     public AuthResponseDto() {}
@@ -22,4 +23,7 @@ public class AuthResponseDto {
 
     public UserDto getUser() { return user; }
     public void setUser(UserDto user) { this.user = user; }
+
+    public String getRefreshToken() { return refreshToken; }
+    public void setRefreshToken(String refreshToken) { this.refreshToken = refreshToken; }
 }
