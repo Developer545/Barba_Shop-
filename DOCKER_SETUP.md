@@ -34,7 +34,7 @@ Editar `.env` con tus credenciales de Neon:
 # Obtener de https://console.neon.tech
 DATABASE_URL=postgresql://neondb_owner:your_password@ep-winter-band-adma1cjo-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
 DATABASE_USERNAME=neondb_owner
-DATABASE_PASSWORD=npg_U4HcXut9kgBw...
+DATABASE_PASSWORD=your_neon_password_here
 
 # JWT (cambiar en producción)
 JWT_SECRET=my-super-secret-key-min-32-characters-long
